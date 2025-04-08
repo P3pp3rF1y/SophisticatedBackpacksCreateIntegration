@@ -1,0 +1,403 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '1.0.14'
+    id "org.sonarqube" version "5.0.0.4638"
+    id "net.darkhax.curseforgegradle" version "1.1.15"
+    id "com.modrinth.minotaur" version "2.+"
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+version = "${project.minecraft_version}-${project.mod_version}.${getBuildNumber()}${getStable()}"
+group = mod_group_id
+
+repositories {
+    mavenCentral()
+    maven { url "https://maven.tterrag.com/" }
+    maven { url = "https://modmaven.dev/" }
+    maven { url "https://minecraft.curseforge.com/api/maven/"}
+    maven {
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven { url "https://maven.blamejared.com/" }
+    maven {
+        name = "GHPCore"
+        url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedcore")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+        content {
+            includeGroupByRegex "sophisticatedcore.*"
+        }
+    }
+    maven {
+        name = "GHPBackpacks"
+        url = uri("https://maven.pkg.github.com/p3pp3rf1y/sophisticatedbackpacks")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+        content {
+            includeGroupByRegex "sophisticatedbackpacks.*"
+        }
+    }
+    maven {
+        url = "https://maven.octo-studios.com/#/releases"
+        content {
+            includeGroup 'top.theillusivec4.curios'
+        }
+    }
+    maven {
+        url = "https://maven.createmod.net"
+        content {
+            includeGroup "com.simibubi.create"
+            includeGroupByRegex "net.createmod.*"
+            includeGroupByRegex "dev.engine-room.*"
+        }
+    }
+}
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+            systemProperty 'mixin.env.disableRefMap', 'true'
+        }
+
+        client {
+            client()
+        }
+
+        client2 {
+            client()
+
+            programArguments.addAll '--username', 'Dev2'
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+        }
+
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+        if (findProject(':SophisticatedCore') != null) {
+            "sophisticatedcore" {
+                sourceSet(project(':SophisticatedCore').sourceSets.main)
+            }
+        }
+        if (findProject(':SophisticatedBackpacks') != null) {
+            "sophisticatedbackpacks" {
+                sourceSet(project(':SophisticatedBackpacks').sourceSets.main)
+            }
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    compileOnly "mezz.jei:jei-${jei_mc_version}-api:${jei_version}"
+    localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
+    compileOnly("com.simibubi.create:create-${create_mc_version}:${create_version}") {
+        transitive = false
+    }
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-${create_mc_version}:${flywheel_version}"){
+        transitive = false
+    }
+    compileOnly("net.createmod.ponder:Ponder-NeoForge-${create_mc_version}:${ponder_version}") {
+        transitive = false
+    }
+
+    if (findProject(':SophisticatedCore') != null) {
+        dependencies.implementation project(':SophisticatedCore')
+    } else {
+        dependencies.implementation("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+        dependencies.testImplementation("sophisticatedcore:sophisticatedcore:${sc_version}") {
+            transitive = false
+        }
+    }
+    if (findProject(':SophisticatedBackpacks') != null) {
+        dependencies.implementation project(':SophisticatedBackpacks')
+    } else {
+        dependencies.implementation("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+            transitive = false
+        }
+        dependencies.testImplementation("sophisticatedbackpacks:sophisticatedbackpacks:${sb_version}") {
+            transitive = false
+        }
+    }
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version   : minecraft_version, minecraft_version_range: minecraft_version_range,
+            neo_version         : neo_version, neo_version_range: neo_version_range,
+            loader_version_range: loader_version_range,
+            mod_id              : mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_issue_tracker_url: mod_issue_tracker_url, mod_logo_file: mod_logo_file, mod_credits: mod_credits,
+            mod_authors         : mod_authors, mod_description: mod_description, mod_display_url: mod_display_url,
+            mod_full_version    : "${project.mod_version}.${getBuildNumber()}${getStable()}",
+            jei_version_range   : "[" + jei_version + ",)",
+            create_version_range   : "[" + create_version.substring(0, create_version.indexOf("-")) + ",)",
+            sb_version_range          :"[" + sb_version.substring(sb_version.indexOf("-") + 1, sb_version.lastIndexOf(',')) + ",)"
+    ]
+    inputs.properties replaceProperties
+
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+
+// Include the output of "generateModMetadata" as an input directory for the build
+// this works with both building through Gradle and the IDE.
+sourceSets.main.resources.srcDir generateModMetadata
+// To avoid having to run "generateModMetadata" manually, make it run on every project reload
+neoForge.ideSyncTask generateModMetadata
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    manifest {
+        attributes(["Specification-Title"     : project.mod_id,
+                    "Specification-Vendor"    : project.mod_id,
+                    "Specification-Version"   : "1",
+                    "Implementation-Title"    : project.name,
+                    "Implementation-Version"  : "${version}",
+                    "Implementation-Vendor"   : project.mod_id,
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")],)
+    }
+}
+
+
+static def getBuildNumber() {
+    if (System.getenv("GITHUB_RUN_NUMBER") != null) {
+        return System.getenv("GITHUB_RUN_NUMBER").toString()
+    }
+    return ""
+}
+
+static def getStable() {
+    if (System.getenv("GITHUB_REF") == null || System.getenv("GITHUB_REF").endsWith("-dev")) {
+        return "-SNAPSHOT"
+    }
+    return ""
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("${github_package_url}")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            artifactId = mod_id
+            from(components.java)
+        }
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "${mod_id}"
+        property "sonar.projectKey", "${sonar_project_key}"
+    }
+}
+
+task generateChangelog {
+    doLast {
+        def changelog = new StringBuilder()
+
+        // Function to remove characters with Unicode code points 129 or higher
+        def removeHighUnicodeChars = { text ->
+            text.codePoints()
+                    .filter { codePoint -> codePoint <= 0x007F }  // Keep only ASCII characters (U+0000 to U+007F)
+                    .collect { codePoint -> new String(Character.toChars(codePoint)) }
+                    .join('')
+        }
+
+        // Function to format commit messages with nesting
+        def formatMultilineMessage = { message ->
+            // Split message by lines, trim whitespace, and create formatted list
+            def lines = message.split('\n')
+            def formattedMessage = lines[0].trim() // First line as top-level list item
+            if (lines.size() > 1) {
+                formattedMessage += "\n" + lines[1..-1].collect { line ->
+                    // Trim the line and remove leading dash if present
+                    def trimmedLine = line.trim()
+                    if (trimmedLine.startsWith('-')) {
+                        trimmedLine = trimmedLine.substring(1).trim()
+                    }
+                    "    - ${trimmedLine}" // Nested list for additional lines
+                }.join('\n')
+            }
+            return formattedMessage
+        }
+
+        // Function to remove [DEV] section from commit message
+        def removeDevSection = { message ->
+            def devIndex = message.indexOf('[DEV]')
+            if (devIndex != -1) {
+                return message.substring(0, devIndex).trim()
+            }
+            return message
+        }
+
+        // Get the latest commit hash
+        def latestCommitHash = "git rev-parse HEAD".execute().text.trim()
+
+        // Check if the latest commit is a merge commit
+        def parentCommits = "git rev-list --parents -n 1 ${latestCommitHash}".execute().text.split()
+        logger.info("Parent commits: ${parentCommits}")
+
+        def commitMessages = []
+        if (parentCommits.size() > 2) { // Merge commit has more than 2 parents
+            def firstParent = parentCommits[1]
+            def secondParent = parentCommits[2]
+            def gitLogCommand = [
+                    "bash", "-c", "git log --pretty=format:%B ${firstParent}..${secondParent}"
+            ]
+            commitMessages = gitLogCommand.execute().text.split('\n\n')  // Split by two newlines for each commit
+            logger.info("Merge commit, ran git log command: ${gitLogCommand.join(' ')} and got ${commitMessages}")
+        } else {
+            // Single commit log
+            commitMessages = "git log -1 --pretty=%B".execute().text.split('\n\n')
+            // Split by two newlines for each commit
+            logger.info("Single commit, ran git log command: git log -1 --pretty=%B and got ${commitMessages}");
+        }
+
+        def features = []
+        def fixes = []
+        commitMessages.each { commitMessage ->
+            commitMessage = removeHighUnicodeChars(commitMessage) // Remove high Unicode characters
+            commitMessage = removeDevSection(commitMessage) // Remove [DEV] section
+
+            if (commitMessage.startsWith('feat: ')) {
+                features.add(commitMessage.replaceFirst('feat: ', '').trim())
+            } else if (commitMessage.startsWith('fix: ')) {
+                fixes.add(commitMessage.replaceFirst('fix: ', '').trim())
+            }
+        }
+
+        if (features) {
+            changelog.append("### Features\n")
+            features.each { feature -> changelog.append("- ${formatMultilineMessage(feature)}\n") }
+        }
+
+        if (fixes) {
+            changelog.append("### Fixes\n")
+            fixes.each { fix -> changelog.append("- ${formatMultilineMessage(fix)}\n") }
+        }
+
+        // Store the changelog in a project property or an environment variable
+        logger.info("Compiled changelog: " + changelog.toString())
+        project.ext.changelog = changelog.toString()
+    }
+    project.ext.changelog = ""
+}
+
+task curseforge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    dependsOn 'generateChangelog'
+
+    apiToken = System.getenv("CURSEFORGE_TOKEN")
+    def mainFile = upload(project.curseforge_id, file("${project.buildDir}/libs/${archivesBaseName}-${version}.jar"))
+    mainFile.changelogType = 'markdown'
+    mainFile.changelog = {project.ext.changelog}
+    mainFile.addModLoader('NeoForge')
+    mainFile.releaseType = "${release_type}"
+    "${release_versions}".split(',').each {
+        mainFile.addGameVersion("${it}")
+    }
+    mainFile.addRequirement('sophisticated-core')
+    mainFile.addRequirement('sophisticated-backpacks')
+    mainFile.addRequirement('create')
+    mainFile.addOptional('jei')
+    onlyIf { !project.ext.changelog.isEmpty() }
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "${modrinth_project_id}"
+    versionType = "${release_type}"
+    uploadFile = jar
+    gameVersions = "${release_versions}".split(',').collect {e -> e}
+    loaders = ["neoforge"]
+    dependencies {
+        required.project "sophisticated-core"
+        required.project "sophisticated-backpacks"
+        required.project "create"
+        optional.project "jei"
+    }
+    changelog = provider {
+        project.ext.changelog
+    }
+}
+tasks.modrinth {
+    dependsOn(tasks.generateChangelog)
+    onlyIf { !project.ext.changelog.isEmpty() }
+}
+
+task printVersionName {
+    println "version:" + project.version
+}
