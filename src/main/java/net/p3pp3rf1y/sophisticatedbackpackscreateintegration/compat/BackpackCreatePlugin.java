@@ -11,7 +11,6 @@ import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpacksCreateIntegration;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
@@ -29,7 +28,7 @@ public class BackpackCreatePlugin implements IModPlugin {
 
 	@Override
 	public ResourceLocation getPluginUid() {
-		return ResourceLocation.fromNamespaceAndPath(SophisticatedBackpacksCreateIntegration.MOD_ID, "default");
+		return new ResourceLocation(SophisticatedBackpacksCreateIntegration.MOD_ID, "default");
 	}
 
 	@Override
@@ -60,14 +59,14 @@ public class BackpackCreatePlugin implements IModPlugin {
 	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 		IRecipeTransferHandlerHelper handlerHelper = registration.getTransferHelper();
 		IStackHelper stackHelper = registration.getJeiHelpers().getStackHelper();
-		registration.addRecipeTransferHandler(new CraftingContainerRecipeTransferHandlerBase<MountedBackpackContainerMenu, RecipeHolder<CraftingRecipe>>(handlerHelper, stackHelper) {
+		registration.addRecipeTransferHandler(new CraftingContainerRecipeTransferHandlerBase<MountedBackpackContainerMenu, CraftingRecipe>(handlerHelper, stackHelper) {
 			@Override
 			public Class<MountedBackpackContainerMenu> getContainerClass() {
 				return MountedBackpackContainerMenu.class;
 			}
 
 			@Override
-			public mezz.jei.api.recipe.RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
+			public mezz.jei.api.recipe.RecipeType<CraftingRecipe> getRecipeType() {
 				return RecipeTypes.CRAFTING;
 			}
 		}, RecipeTypes.CRAFTING);

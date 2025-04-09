@@ -3,13 +3,14 @@ package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.SBPTranslationHelper;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsPayload;
+import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsMessage;
+import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
@@ -24,6 +25,7 @@ import java.util.UUID;
 
 public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBase implements ISyncedContainer {
 	private final MountedBackpackContext context;
+
 	public MountedBackpackContainerMenu(int containerId, Player player, MountedBackpackContext context) {
 		this(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), containerId, player, context);
 	}
@@ -62,11 +64,6 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 	}
 
 	@Override
-	protected CustomPacketPayload instantiateSettingsPayload(UUID uuid, CompoundTag settingsContents) {
-		return new BackpackContentsPayload(uuid, settingsContents);
-	}
-
-	@Override
 	protected CompoundTag getSettingsTag(CompoundTag contents) {
 		return contents.getCompound(BackpackSettingsHandler.SETTINGS_TAG);
 	}
@@ -78,5 +75,10 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	public MountedBackpackContext getContext() {
 		return context;
+	}
+
+	@Override
+	protected void sendSettingsToClient(UUID uuid, ServerPlayer serverPlayer, CompoundTag settingsContents) {
+		SBPPacketHandler.INSTANCE.sendToClient(serverPlayer, new BackpackContentsMessage(uuid, settingsContents));
 	}
 }

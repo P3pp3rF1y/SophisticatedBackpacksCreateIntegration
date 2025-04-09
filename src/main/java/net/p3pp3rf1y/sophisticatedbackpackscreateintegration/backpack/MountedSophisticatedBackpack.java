@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -19,8 +20,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.network.NetworkHooks;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
@@ -31,31 +32,30 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
 import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
-import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdatePayload;
-import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdateMessage;
+import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.TankPosition;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
+import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.OptionalInt;
 
 import static net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock.*;
 
 public class MountedSophisticatedBackpack extends MountedStorageBase {
-	public static final MapCodec<MountedSophisticatedBackpack> CODEC = ItemStack.OPTIONAL_CODEC.xmap(
+	public static final Codec<MountedSophisticatedBackpack> CODEC = ItemStack.CODEC.xmap(
 			MountedSophisticatedBackpack::new, MountedSophisticatedBackpack::getStorageStack
-	).fieldOf("value");
+	);
 
-	private IBackpackWrapper backpackWrapper = IBackpackWrapper.Noop.INSTANCE;;
+	private IBackpackWrapper backpackWrapper = IBackpackWrapper.Noop.INSTANCE;
 
 	@Nullable
 	private WeakReference<Entity> contraptionEntity = null;
@@ -106,7 +106,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	protected void afterInitialSync() {
-		refreshRenderBlockEntity();
+		updateRenderAttributes = true;
 	}
 
 	private void refreshRenderBlockEntity() {
@@ -130,7 +130,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 	@Override
 	public IStorageWrapper getStorageWrapper() {
 		if (backpackWrapper == IBackpackWrapper.Noop.INSTANCE) {
-			backpackWrapper = BackpackWrapper.fromStack(getStorageStack());
+			backpackWrapper = new BackpackWrapper(getStorageStack());
 			backpackWrapper.setContentsChangeHandler(this::onStackChanged);
 		}
 
@@ -139,17 +139,21 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	public void unmount(Level level, BlockState state, BlockPos pos, @Nullable BlockEntity be) {
-		if (getStorageStack().has(ModCoreDataComponents.STORAGE_UUID) && be instanceof BackpackBlockEntity backpackBe) {
-			backpackBe.setBackpack(getStorageStack());
-		}
+		NBTHelper.getUniqueId(getStorageStack(), BackpackWrapper.CONTENTS_UUID_TAG).ifPresent(uuid -> {
+			if (be instanceof BackpackBlockEntity backpackBe) {
+				backpackBe.setBackpack(getStorageStack());
+			}
+		});
 	}
 
 	private static MountedStorageContainerMenuBase createMenu(int id, Player pl, MountedBackpackContext context) {
 		return new MountedBackpackContainerMenu(id, pl, context);
 	}
 
-	public static OptionalInt openMenu(ServerPlayer player, MountedBackpackContext context) {
-		return player.openMenu(new SophisticatedMenuProvider((w, p, pl) -> createMenu(w, pl, context), context.getDisplayName(player), false), context::toBuffer);
+	public static void openMenu(ServerPlayer player, MountedBackpackContext context) {
+		NetworkHooks.openScreen(
+				player,
+				new SimpleMenuProvider((w, p, pl) -> createMenu(w, pl, context), context.getDisplayName(player)), context::toBuffer);
 	}
 
 	@Override
@@ -160,14 +164,10 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 		Vec3 localPosVec = Vec3.atCenterOf(localPos);
 
-		OptionalInt id = openMenu(player, new MountedBackpackContext(contraptionEntityId, localPos));
-		if (id.isPresent()) {
-			Vec3 globalPos = contraption.entity.toGlobalVector(localPosVec, 0);
-			onOpen(level, globalPos);
-			return true;
-		} else {
-			return false;
-		}
+		openMenu(player, new MountedBackpackContext(contraptionEntityId, localPos));
+		Vec3 globalPos = contraption.entity.toGlobalVector(localPosVec, 0);
+		onOpen(level, globalPos);
+		return true;
 	}
 
 	protected Vec3 getPosition() {
@@ -289,7 +289,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 		}
 
 		setStackClean();
-		PacketDistributor.sendToPlayersTrackingEntity(entity, new MountedStorageUpdatePayload(entity.getId(), localPos, getStorageStack(), false));
+		PacketHandler.INSTANCE.sendToAllTracking(new MountedStorageUpdateMessage(entity.getId(), localPos, getStorageStack(), false), entity);
 	}
 
 	public void setBlockRenderDirty() {

@@ -125,7 +125,7 @@ public class MountedBackpackContext {
 						if (!(stackInSlot.getItem() instanceof BackpackItem)) {
 							return IBackpackWrapper.Noop.INSTANCE;
 						}
-						return BackpackWrapper.fromStack(stackInSlot);
+						return new BackpackWrapper(stackInSlot);
 					}).orElse(IBackpackWrapper.Noop.INSTANCE);
 		}
 

@@ -3,17 +3,19 @@ package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.inventory.Slot;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.KeybindHandler;
-import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenPayload;
+import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenMessage;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
@@ -23,14 +25,18 @@ public class ModContentClient {
 	public static void registerHandlers(IEventBus modBus) {
 		modBus.addListener(ModContentClient::onMenuScreenRegister);
 
-		IEventBus eventBus = NeoForge.EVENT_BUS;
+		IEventBus eventBus = MinecraftForge.EVENT_BUS;
 		eventBus.addListener(EventPriority.HIGH, ModContentClient::handleGuiMouseKeyPress);
 		eventBus.addListener(EventPriority.HIGH, ModContentClient::handleGuiKeyPress);
 	}
 
-	private static void onMenuScreenRegister(RegisterMenuScreensEvent event) {
-		event.register(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), MountedBackpackScreen::constructScreen);
-		event.register(ModContent.MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE.get(), MountedBackpackSettingsScreen::constructScreen);
+	private static void onMenuScreenRegister(RegisterEvent event) {
+		if (!event.getRegistryKey().equals(ForgeRegistries.Keys.MENU_TYPES)) {
+			return;
+		}
+
+		MenuScreens.register(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), MountedBackpackScreen::constructScreen);
+		MenuScreens.register(ModContent.MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE.get(), MountedBackpackSettingsScreen::constructScreen);
 	}
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
@@ -69,7 +75,7 @@ public class ModContentClient {
 
 			if (mountedBackpackScreen.getMenu().isFirstLevelStorage() && slot instanceof StorageInventorySlot && slot.getItem().getItem() instanceof BackpackItem && slot.getItem().getCount() == 1) {
 				mountedBackpackScreen.getMenu().getContext().getSubBackpackContext(slot.index);
-				PacketDistributor.sendToServer(new MountedSubBackpackOpenPayload(slot.index));
+				SBPPacketHandler.INSTANCE.sendToServer(new MountedSubBackpackOpenMessage(slot.index));
 				return true;
 			}
 		}
