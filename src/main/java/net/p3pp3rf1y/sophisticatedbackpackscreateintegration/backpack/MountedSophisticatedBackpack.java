@@ -106,7 +106,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	protected void afterInitialSync() {
-		refreshRenderBlockEntity();
+		updateRenderAttributes = true;
 	}
 
 	private void refreshRenderBlockEntity() {
