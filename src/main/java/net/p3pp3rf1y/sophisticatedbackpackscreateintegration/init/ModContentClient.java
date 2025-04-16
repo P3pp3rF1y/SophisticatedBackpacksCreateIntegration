@@ -20,6 +20,7 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackp
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageInventorySlot;
+import net.p3pp3rf1y.sophisticatedcore.compat.trashslot.TrashSlotScreenRegistry;
 
 public class ModContentClient {
 	public static void registerHandlers(IEventBus modBus) {
@@ -37,6 +38,8 @@ public class ModContentClient {
 
 		MenuScreens.register(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), MountedBackpackScreen::constructScreen);
 		MenuScreens.register(ModContent.MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE.get(), MountedBackpackSettingsScreen::constructScreen);
+
+		TrashSlotScreenRegistry.registerScreen(MountedBackpackScreen.class);
 	}
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
