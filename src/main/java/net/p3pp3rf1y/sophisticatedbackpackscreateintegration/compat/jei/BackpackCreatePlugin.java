@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat;
+package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -15,9 +15,9 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpa
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.CraftingContainerRecipeTransferHandlerBase;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.SettingsGhostIngredientHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.StorageGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiCraftingContainerRecipeTransferHandlerBase;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiSettingsGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.JeiStorageGhostIngredientHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,15 +51,15 @@ public class BackpackCreatePlugin implements IModPlugin {
 			}
 		});
 
-		registration.addGhostIngredientHandler(MountedBackpackScreen.class, new StorageGhostIngredientHandler<>());
-		registration.addGhostIngredientHandler(MountedBackpackSettingsScreen.class, new SettingsGhostIngredientHandler<>());
+		registration.addGhostIngredientHandler(MountedBackpackScreen.class, new JeiStorageGhostIngredientHandler<>());
+		registration.addGhostIngredientHandler(MountedBackpackSettingsScreen.class, new JeiSettingsGhostIngredientHandler<>());
 	}
 
 	@Override
 	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 		IRecipeTransferHandlerHelper handlerHelper = registration.getTransferHelper();
 		IStackHelper stackHelper = registration.getJeiHelpers().getStackHelper();
-		registration.addRecipeTransferHandler(new CraftingContainerRecipeTransferHandlerBase<MountedBackpackContainerMenu, CraftingRecipe>(handlerHelper, stackHelper) {
+		registration.addRecipeTransferHandler(new JeiCraftingContainerRecipeTransferHandlerBase<MountedBackpackContainerMenu, CraftingRecipe>(handlerHelper, stackHelper) {
 			@Override
 			public Class<MountedBackpackContainerMenu> getContainerClass() {
 				return MountedBackpackContainerMenu.class;
