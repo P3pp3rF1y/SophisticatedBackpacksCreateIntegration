@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat;
+package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -16,9 +16,9 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpa
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.CraftingContainerRecipeTransferHandlerBase;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.SettingsGhostIngredientHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.jei.StorageGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.CraftingContainerRecipeTransferHandlerBase;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.SettingsGhostIngredientHandler;
+import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.jei.StorageGhostIngredientHandler;
 
 import java.util.ArrayList;
 import java.util.List;

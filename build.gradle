@@ -66,6 +66,13 @@ repositories {
             includeGroupByRegex "dev.engine-room.*"
         }
     }
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+        content {
+            includeGroup "dev.emi"
+        }
+    }
 }
 
 base {
@@ -143,6 +150,8 @@ configurations {
 dependencies {
     compileOnly "mezz.jei:jei-${jei_mc_version}-api:${jei_version}"
     localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
+    compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
+    localRuntime "dev.emi:emi-neoforge:${emi_version}"
     compileOnly("com.simibubi.create:create-${create_mc_version}:${create_version}") {
         transitive = false
     }
