@@ -73,6 +73,14 @@ repositories {
             includeGroup "dev.emi"
         }
     }
+    maven {
+        url = "https://maven.shedaniel.me/"
+        content {
+            includeGroup "dev.architectury"
+            includeGroup "me.shedaniel"
+            includeGroup "me.shedaniel.cloth"
+        }
+    }
 }
 
 base {
@@ -152,6 +160,8 @@ dependencies {
     localRuntime "mezz.jei:jei-${jei_mc_version}:${jei_version}"
     compileOnly "dev.emi:emi-neoforge:${emi_version}:api"
     localRuntime "dev.emi:emi-neoforge:${emi_version}"
+    compileOnly "me.shedaniel:RoughlyEnoughItems-api-neoforge:${rei_version}"
+    localRuntime "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
     compileOnly("com.simibubi.create:create-${create_mc_version}:${create_version}") {
         transitive = false
     }
