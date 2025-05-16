@@ -4,8 +4,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 public record MountedSubBackpackOpenMessage(int slotIndex) {
