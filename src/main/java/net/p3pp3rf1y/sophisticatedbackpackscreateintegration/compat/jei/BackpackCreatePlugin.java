@@ -47,7 +47,7 @@ public class BackpackCreatePlugin implements IModPlugin {
 		registration.addGuiContainerHandler(MountedBackpackSettingsScreen.class, new IGuiContainerHandler<>() {
 			@Override
 			public List<Rect2i> getGuiExtraAreas(MountedBackpackSettingsScreen gui) {
-				return new ArrayList<>(gui.getSettingsTabControl().getTabRectangles());
+				return new ArrayList<>(gui.getExtendedControlsRectangles());
 			}
 		});
 
