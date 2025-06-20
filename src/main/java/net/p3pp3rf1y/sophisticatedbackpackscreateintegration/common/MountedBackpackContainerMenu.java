@@ -8,7 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
-import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.SBPTranslationHelper;
+import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.BackpackTranslationHelper;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
@@ -73,7 +73,7 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	@Override
 	protected String getSettingsTitleKey() {
-		return SBPTranslationHelper.INSTANCE.translGui("settings.title");
+		return BackpackTranslationHelper.INSTANCE.translGui("settings.title");
 	}
 
 	public MountedBackpackContext getContext() {

@@ -29,17 +29,17 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackp
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContext;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
-import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeRenderer;
-import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeRenderRegistry;
+import net.p3pp3rf1y.sophisticatedcore.api.IUpgradeClientTickHandler;
+import net.p3pp3rf1y.sophisticatedcore.client.render.UpgradeClientRegistry;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SophisticatedMenuProvider;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdatePayload;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.TankPosition;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeRenderDataType;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeClientDataType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
 import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 
@@ -266,13 +266,13 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeRenderData().forEach((type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type)
-				.ifPresent(renderer -> renderUpgrade(renderer, level, rand, type, data)));
+		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type)
+				.ifPresent(renderer -> clientTickUpgrade(renderer, level, rand, type, data)));
 	}
 
-	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
+	private <T extends IUpgradeClientData> void clientTickUpgrade(IUpgradeClientTickHandler<T> renderer, Level level, RandomSource rand, UpgradeClientDataType<?> type, IUpgradeClientData data) {
 		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + 0.8f, (float) getPosition().z()), (T) renderData));
+		type.cast(data).ifPresent(clientData -> renderer.onClientTick(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + 0.8f, (float) getPosition().z()), (T) clientData));
 	}
 
 	private boolean isStackDirty() {

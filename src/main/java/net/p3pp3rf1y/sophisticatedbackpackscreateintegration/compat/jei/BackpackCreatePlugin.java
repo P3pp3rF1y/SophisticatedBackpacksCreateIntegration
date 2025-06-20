@@ -6,6 +6,7 @@ import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.helpers.IStackHelper;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
+import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.renderer.Rect2i;
@@ -67,7 +68,7 @@ public class BackpackCreatePlugin implements IModPlugin {
 			}
 
 			@Override
-			public mezz.jei.api.recipe.RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
+			public IRecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
 				return RecipeTypes.CRAFTING;
 			}
 		}, RecipeTypes.CRAFTING);
