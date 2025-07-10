@@ -35,7 +35,7 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 
 	@Override
 	protected CompoundTag getSettingsTag(CompoundTag contents) {
-		return contents.getCompound(BackpackSettingsHandler.SETTINGS_TAG);
+		return contents.getCompoundOrEmpty(BackpackSettingsHandler.SETTINGS_TAG);
 	}
 
 	public static MountedBackpackSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {

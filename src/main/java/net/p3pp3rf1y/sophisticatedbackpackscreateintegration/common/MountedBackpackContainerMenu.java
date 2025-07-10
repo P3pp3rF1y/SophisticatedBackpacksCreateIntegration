@@ -68,7 +68,7 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	@Override
 	protected CompoundTag getSettingsTag(CompoundTag contents) {
-		return contents.getCompound(BackpackSettingsHandler.SETTINGS_TAG);
+		return contents.getCompoundOrEmpty(BackpackSettingsHandler.SETTINGS_TAG);
 	}
 
 	@Override

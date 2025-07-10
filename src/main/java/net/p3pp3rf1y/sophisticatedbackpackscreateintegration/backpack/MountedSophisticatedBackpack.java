@@ -55,7 +55,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 			MountedSophisticatedBackpack::new, MountedSophisticatedBackpack::getStorageStack
 	).fieldOf("value");
 
-	private IBackpackWrapper backpackWrapper = IBackpackWrapper.Noop.INSTANCE;;
+	private IBackpackWrapper backpackWrapper = IBackpackWrapper.Noop.INSTANCE;
 
 	@Nullable
 	private WeakReference<Entity> contraptionEntity = null;
