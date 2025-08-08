@@ -23,7 +23,7 @@ public class SophisticatedBackpackSafeNbtWriter implements SafeNbtWriterRegistry
 			backpackCopy.remove(ModCoreDataComponents.STORAGE_UUID);
 			IBackpackWrapper copyWrapper = BackpackWrapper.fromStack(backpackCopy);
 			copyWrapper.setColors(mainColor, accentColor);
-			tag.put(BackpackBlockEntity.BACKPACK_DATA_TAG, backpackCopy.save(registries));
+			tag.put(BackpackBlockEntity.BACKPACK_DATA, backpackCopy.save(registries));
 		}
 	}
 }

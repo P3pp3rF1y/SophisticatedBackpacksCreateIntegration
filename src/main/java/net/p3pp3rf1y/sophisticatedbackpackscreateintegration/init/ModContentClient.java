@@ -72,7 +72,7 @@ public class ModContentClient {
 
 			if (mountedBackpackScreen.getMenu().isFirstLevelStorage() && slot instanceof StorageInventorySlot && slot.getItem().getItem() instanceof BackpackItem && slot.getItem().getCount() == 1) {
 				mountedBackpackScreen.getMenu().getContext().getSubBackpackContext(slot.index);
-				PacketDistributor.sendToServer(new MountedSubBackpackOpenPayload(slot.index));
+				ClientPacketDistributor.sendToServer(new MountedSubBackpackOpenPayload(slot.index));
 				return true;
 			}
 		}

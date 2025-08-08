@@ -32,7 +32,7 @@ public class MountedBackpackScreen extends StorageScreenBase<MountedBackpackCont
 		}
 		if (keyCode == 256 || KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(InputConstants.getKey(keyCode, scanCode))) {
 			if (!getMenu().isFirstLevelStorage()) {
-				PacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
+				ClientPacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
 				return true;
 			}
 		}

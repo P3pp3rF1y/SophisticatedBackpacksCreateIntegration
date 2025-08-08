@@ -21,7 +21,7 @@ public class MountedBackpackSettingsScreen extends BackpackSettingsScreen {
 
 	@Override
 	protected void sendStorageInventoryScreenOpenMessage() {
-		PacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
+		ClientPacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
 	}
 
 	public static MountedBackpackSettingsScreen constructScreen(SettingsContainerMenu<?> screenContainer, Inventory inventory, Component title) {

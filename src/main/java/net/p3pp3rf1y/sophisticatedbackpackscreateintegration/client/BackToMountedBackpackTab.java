@@ -18,6 +18,6 @@ public class BackToMountedBackpackTab extends Tab {
 
 	@Override
 	protected void onTabIconClicked(int button) {
-		PacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
+		ClientPacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
 	}
 }
