@@ -3,7 +3,9 @@ package net.p3pp3rf1y.sophisticatedbackpackscreateintegration;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +18,12 @@ public class SophisticatedBackpacksCreateIntegration {
 	public SophisticatedBackpacksCreateIntegration() {
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ModContent.registerHandler(modBus);
+		modBus.addListener(SophisticatedBackpacksCreateIntegration::setup);
+		ModCompat.initCompats();
+	}
+
+	private static void setup(FMLCommonSetupEvent event) {
+		ModCompat.compatsSetup();
 	}
 
 	public static ResourceLocation getRL(String regName) {

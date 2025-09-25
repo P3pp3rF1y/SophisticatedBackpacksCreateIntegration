@@ -44,14 +44,14 @@ public class ModContentClient {
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
 		InputConstants.Key key = InputConstants.getKey(event.getKeyCode(), event.getScanCode());
-		if (KeybindHandler.SORT_KEYBIND.isActiveAndMatches(key) && tryCallSort(event.getScreen()) || KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(key) && sendBackpackOpenOrCloseMessage()) {
+		if (KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(key) && sendBackpackOpenOrCloseMessage()) {
 			event.setCanceled(true);
 		}
 	}
 
 	public static void handleGuiMouseKeyPress(ScreenEvent.MouseButtonPressed.Pre event) {
 		InputConstants.Key input = InputConstants.Type.MOUSE.getOrCreate(event.getButton());
-		if (KeybindHandler.SORT_KEYBIND.isActiveAndMatches(input) && tryCallSort(event.getScreen()) || KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(input) && sendBackpackOpenOrCloseMessage()) {
+		if (KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(input) && sendBackpackOpenOrCloseMessage()) {
 			event.setCanceled(true);
 		}
 	}
