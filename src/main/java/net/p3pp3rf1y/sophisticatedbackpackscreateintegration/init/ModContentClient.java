@@ -10,7 +10,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.KeybindHandler;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenPayload;
@@ -38,14 +37,14 @@ public class ModContentClient {
 
 	public static void handleGuiKeyPress(ScreenEvent.KeyPressed.Pre event) {
 		InputConstants.Key key = InputConstants.getKey(event.getKeyCode(), event.getScanCode());
-		if (KeybindHandler.SORT_KEYBIND.isActiveAndMatches(key) && tryCallSort(event.getScreen()) || KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(key) && sendBackpackOpenOrCloseMessage()) {
+		if (KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(key) && sendBackpackOpenOrCloseMessage()) {
 			event.setCanceled(true);
 		}
 	}
 
 	public static void handleGuiMouseKeyPress(ScreenEvent.MouseButtonPressed.Pre event) {
 		InputConstants.Key input = InputConstants.Type.MOUSE.getOrCreate(event.getButton());
-		if (KeybindHandler.SORT_KEYBIND.isActiveAndMatches(input) && tryCallSort(event.getScreen()) || KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(input) && sendBackpackOpenOrCloseMessage()) {
+		if (KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(input) && sendBackpackOpenOrCloseMessage()) {
 			event.setCanceled(true);
 		}
 	}
