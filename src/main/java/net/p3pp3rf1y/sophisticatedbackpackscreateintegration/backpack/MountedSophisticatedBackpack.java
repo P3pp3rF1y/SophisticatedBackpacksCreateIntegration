@@ -104,20 +104,16 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 		contraptionEntity = new WeakReference<>(entity);
 	}
 
-	@Override
-	protected void afterInitialSync() {
-		updateRenderAttributes = true;
-	}
-
 	private void refreshRenderBlockEntity() {
 		Entity e = getEntity();
 		if (e instanceof AbstractContraptionEntity abstractContraptionEntity
-				&& abstractContraptionEntity.getContraption().presentBlockEntities.get(localPos) instanceof BackpackBlockEntity backpackBe) {
+				&& abstractContraptionEntity.getContraption().getBlockEntityClientSide(localPos) instanceof BackpackBlockEntity backpackBe) {
 			backpackBe.setBackpack(getStorageStack());
 			StructureTemplate.StructureBlockInfo blockInfo = abstractContraptionEntity.getContraption().getBlocks().get(localPos);
 			if (blockInfo != null && blockInfo.state().getBlock() instanceof BackpackBlock) {
 				backpackBe.setBlockState(blockInfo.state());
 			}
+			abstractContraptionEntity.getContraption().invalidateClientContraptionStructure();
 		}
 	}
 
