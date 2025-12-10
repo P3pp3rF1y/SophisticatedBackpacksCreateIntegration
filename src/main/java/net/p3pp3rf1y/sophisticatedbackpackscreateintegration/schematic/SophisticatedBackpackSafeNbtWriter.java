@@ -3,6 +3,8 @@ package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.schematic;
 import com.simibubi.create.api.schematic.nbt.SafeNbtWriterRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity;
@@ -23,7 +25,7 @@ public class SophisticatedBackpackSafeNbtWriter implements SafeNbtWriterRegistry
 			backpackCopy.remove(ModCoreDataComponents.STORAGE_UUID);
 			IBackpackWrapper copyWrapper = BackpackWrapper.fromStack(backpackCopy);
 			copyWrapper.setColors(mainColor, accentColor);
-			tag.put(BackpackBlockEntity.BACKPACK_DATA, backpackCopy.save(registries));
+			tag.put(BackpackBlockEntity.BACKPACK_DATA, ItemStack.CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, be.getLevel().registryAccess()), backpackCopy).getOrThrow());
 		}
 	}
 }

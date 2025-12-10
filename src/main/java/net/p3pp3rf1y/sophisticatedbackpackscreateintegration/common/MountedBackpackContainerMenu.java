@@ -9,21 +9,20 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.BackpackTranslationHelper;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsPayload;
+import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackSettingsPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
-import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
-import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 
 import java.util.UUID;
 
 public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBase implements ISyncedContainer {
 	private final MountedBackpackContext context;
+
 	public MountedBackpackContainerMenu(int containerId, Player player, MountedBackpackContext context) {
 		this(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), containerId, player, context);
 	}
@@ -38,17 +37,12 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 	}
 
 	@Override
-	protected StorageContainerMenuBase<IStorageWrapper>.StorageUpgradeSlot instantiateUpgradeSlot(UpgradeHandler upgradeHandler, int slotIndex) {
-		return new StorageUpgradeSlot(upgradeHandler, slotIndex) {
-			@Override
-			protected void onUpgradeChanged() {
-				if (player.level().isClientSide()) {
-					return;
-				}
-				storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
-				context.setBlockRenderDirty(player);
-			}
-		};
+	protected void onUpgradeChanged() {
+		if (player.level().isClientSide()) {
+			return;
+		}
+		storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
+		context.setBlockRenderDirty(player);
 	}
 
 	@Override
@@ -62,8 +56,8 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 	}
 
 	@Override
-	protected CustomPacketPayload instantiateSettingsPayload(UUID uuid, CompoundTag settingsContents) {
-		return new BackpackContentsPayload(uuid, settingsContents);
+	protected CustomPacketPayload instantiateSettingsPayload(UUID uuid, ContainerContents.SettingsData settingsData) {
+		return new BackpackSettingsPayload(uuid, settingsData);
 	}
 
 	@Override

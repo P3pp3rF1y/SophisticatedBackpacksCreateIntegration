@@ -46,7 +46,7 @@ public class ModContent {
 		ITEM_STORAGE_TYPES.register(modBus);
 		MENU_TYPES.register(modBus);
 
-		if (FMLEnvironment.dist == Dist.CLIENT) {
+		if (FMLEnvironment.getDist() == Dist.CLIENT) {
 			ModContentClient.registerHandlers(modBus);
 		}
 

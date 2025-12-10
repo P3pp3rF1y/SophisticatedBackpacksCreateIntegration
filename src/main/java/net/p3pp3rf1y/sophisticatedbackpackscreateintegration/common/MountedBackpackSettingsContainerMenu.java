@@ -8,20 +8,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackStorage;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsPayload;
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsCategory;
-import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
+import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackSettingsPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 
 import java.util.UUID;
 
 public class MountedBackpackSettingsContainerMenu extends MountedStorageSettingsContainerMenuBase {
-	static {
-		SettingsContainerMenu.addFactory(BackpackMainSettingsCategory.NAME, BackpackMainSettingsContainer::new);
-	}
-
 	private final MountedBackpackContext context;
 
 	protected MountedBackpackSettingsContainerMenu(int windowId, Player player, MountedBackpackContext context) {
@@ -47,15 +41,15 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 	}
 
 	@Override
-	protected CustomPacketPayload instantiateSettingsPayload(UUID uuid, CompoundTag settingsContents) {
-		return new BackpackContentsPayload(uuid, settingsContents);
+	protected CustomPacketPayload instantiateSettingsPayload(UUID uuid, ContainerContents.SettingsData settingsContents) {
+		return new BackpackSettingsPayload(uuid, settingsContents);
 	}
 
 	@Override
 	protected void updateFromContents(UUID uuid) {
 		BackpackStorage storage = BackpackStorage.get();
 		if (storage.removeUpdatedBackpackSettingsFlag(uuid)) {
-			storageWrapper.getSettingsHandler().reloadFrom(storage.getOrCreateBackpackContents(uuid));
+			storageWrapper.getSettingsHandler().reloadFrom(storage.getOrCreateBackpackContents(uuid).settings());
 		}
 	}
 }

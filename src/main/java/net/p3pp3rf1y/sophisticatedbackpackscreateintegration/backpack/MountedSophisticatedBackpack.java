@@ -19,8 +19,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
@@ -37,7 +39,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenu
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdatePayload;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
-import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.TankPosition;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.UpgradeClientDataType;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.ITickableUpgrade;
@@ -150,7 +152,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	public boolean handleInteraction(ServerPlayer player, Contraption contraption, StructureTemplate.StructureBlockInfo info) {
-		ServerLevel level = player.serverLevel();
+		ServerLevel level = player.level();
 		int contraptionEntityId = contraption.entity.getId();
 		BlockPos localPos = info.pos();
 
@@ -236,10 +238,14 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 	}
 
 	private void tryToPickup(Level level, ItemEntity itemEntity) {
-		ItemStack remainingStack = itemEntity.getItem().copy();
-		remainingStack = InventoryHelper.runPickupOnPickupResponseUpgrades(level, getStorageWrapper().getUpgradeHandler(), remainingStack, false);
-		if (remainingStack.getCount() < itemEntity.getItem().getCount()) {
-			itemEntity.setItem(remainingStack);
+		ItemStack stack = itemEntity.getItem();
+		try (Transaction tx = Transaction.openRoot()) {
+			ItemResource resource = ItemResource.of(stack);
+			int pickedUp = InventoryHelper.runPickupOnPickupResponseUpgrades(level, getStorageWrapper().getUpgradeHandler(), resource, stack.getCount(), tx);
+			if (pickedUp > 0) {
+				tx.commit();
+				itemEntity.setItem(resource.toStack(stack.getCount() - pickedUp));
+			}
 		}
 	}
 
@@ -253,16 +259,16 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 			updateRenderAttributes = false;
 		}
 		if (level.random.nextInt(10) == 0) {
-			RenderInfo renderInfo = getStorageWrapper().getRenderInfo();
-			renderUpgrades(level, level.random, renderInfo);
+			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
+			renderUpgrades(level, level.random, renderDataHandler);
 		}
 	}
 
-	private void renderUpgrades(Level level, RandomSource rand, RenderInfo renderInfo) {
+	private void renderUpgrades(Level level, RandomSource rand, RenderDataHandler renderDataHandler) {
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type)
+		renderDataHandler.getUpgradeClientData().forEach((type, data) -> UpgradeClientRegistry.getUpgradeClientTickHandler(type)
 				.ifPresent(renderer -> clientTickUpgrade(renderer, level, rand, type, data)));
 	}
 
@@ -295,15 +301,15 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 				BlockState state = blockInfo.state();
 				state = state.setValue(LEFT_TANK, false);
 				state = state.setValue(RIGHT_TANK, false);
-				RenderInfo renderInfo = backpackWrapper.getRenderInfo();
-				for (TankPosition pos : renderInfo.getTankRenderInfos().keySet()) {
+				RenderDataHandler renderDataHandler = backpackWrapper.getRenderDataHandler();
+				for (TankPosition pos : renderDataHandler.getTankRenderData().keySet()) {
 					if (pos == TankPosition.LEFT) {
 						state = state.setValue(LEFT_TANK, true);
 					} else if (pos == TankPosition.RIGHT) {
 						state = state.setValue(RIGHT_TANK, true);
 					}
 				}
-				state = state.setValue(BATTERY, renderInfo.getBatteryRenderInfo().isPresent());
+				state = state.setValue(BATTERY, renderDataHandler.getBatteryRenderData().isPresent());
 				cEntity.setBlock(localPos, new StructureTemplate.StructureBlockInfo(blockInfo.pos(), state, blockInfo.nbt()));
 			}
 		}
@@ -318,7 +324,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 	}
 
 	@Override
-	protected IItemHandlerModifiable getExternalItemHandler() {
+	protected ResourceHandler<ItemResource> getExternalItemHandler() {
 		return getStorageWrapper().getInventoryForInputOutput();
 	}
 }
