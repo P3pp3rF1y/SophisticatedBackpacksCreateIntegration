@@ -10,7 +10,7 @@ import mezz.jei.api.recipe.types.IRecipeType;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpacksCreateIntegration;
@@ -29,8 +29,8 @@ import java.util.List;
 public class BackpackCreatePlugin implements IModPlugin {
 
 	@Override
-	public ResourceLocation getPluginUid() {
-		return ResourceLocation.fromNamespaceAndPath(SophisticatedBackpacksCreateIntegration.MOD_ID, "default");
+	public Identifier getPluginUid() {
+		return Identifier.fromNamespaceAndPath(SophisticatedBackpacksCreateIntegration.MOD_ID, "default");
 	}
 
 	@Override

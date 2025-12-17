@@ -1,6 +1,6 @@
 package net.p3pp3rf1y.sophisticatedbackpackscreateintegration;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -21,8 +21,8 @@ public class SophisticatedBackpacksCreateIntegration {
 		ModCompat.register();
 	}
 
-	public static ResourceLocation getRL(String regName) {
-		return ResourceLocation.parse(getRegistryName(regName));
+	public static Identifier getIdentifier(String regName) {
+		return Identifier.parse(getRegistryName(regName));
 	}
 
 	public static String getRegistryName(String regName) {

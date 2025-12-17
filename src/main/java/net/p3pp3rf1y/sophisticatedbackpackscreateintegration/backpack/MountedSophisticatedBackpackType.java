@@ -6,8 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class MountedSophisticatedBackpackType extends MountedItemStorageType<MountedSophisticatedBackpack> {
 	public MountedSophisticatedBackpackType() {

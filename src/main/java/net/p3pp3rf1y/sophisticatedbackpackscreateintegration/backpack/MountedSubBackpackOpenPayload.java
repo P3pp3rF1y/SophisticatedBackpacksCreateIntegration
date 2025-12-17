@@ -11,7 +11,7 @@ import net.p3pp3rf1y.sophisticatedbackpacks.SophisticatedBackpacks;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
 
 public record MountedSubBackpackOpenPayload(int slotIndex) implements CustomPacketPayload {
-	public static final Type<MountedSubBackpackOpenPayload> TYPE = new Type<>(SophisticatedBackpacks.getRL("mounted_subbackpack_open"));
+	public static final Type<MountedSubBackpackOpenPayload> TYPE = new Type<>(SophisticatedBackpacks.getIdentifier("mounted_subbackpack_open"));
 
 	public static final StreamCodec<ByteBuf, MountedSubBackpackOpenPayload> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.INT,

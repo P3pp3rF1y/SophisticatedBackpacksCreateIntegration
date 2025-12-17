@@ -11,7 +11,7 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackp
 import net.p3pp3rf1y.sophisticatedcore.SophisticatedCore;
 
 public class OpenMountedBackpackInventoryPayload implements CustomPacketPayload {
-	public static final Type<OpenMountedBackpackInventoryPayload> TYPE = new Type<>(SophisticatedCore.getRL("open_mounted_backpack_inventory"));
+	public static final Type<OpenMountedBackpackInventoryPayload> TYPE = new Type<>(SophisticatedCore.getIdentifier("open_mounted_backpack_inventory"));
 	public static final OpenMountedBackpackInventoryPayload INSTANCE = new OpenMountedBackpackInventoryPayload();
 	public static final StreamCodec<ByteBuf, OpenMountedBackpackInventoryPayload> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 

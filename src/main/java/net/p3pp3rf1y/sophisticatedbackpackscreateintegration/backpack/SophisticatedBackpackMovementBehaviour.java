@@ -5,8 +5,7 @@ import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.ContraptionHelper;
-
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SophisticatedBackpackMovementBehaviour implements MovementBehaviour {
 	public static final SophisticatedBackpackMovementBehaviour INSTANCE = new SophisticatedBackpackMovementBehaviour();
