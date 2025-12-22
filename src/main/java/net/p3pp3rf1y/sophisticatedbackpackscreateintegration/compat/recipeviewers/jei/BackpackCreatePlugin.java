@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat.jei;
+package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat.recipeviewers.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
