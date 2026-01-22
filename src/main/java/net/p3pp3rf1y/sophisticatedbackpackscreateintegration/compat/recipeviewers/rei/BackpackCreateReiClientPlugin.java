@@ -1,4 +1,4 @@
-package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat.rei;
+package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.compat.recipeviewers.rei;
 
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.plugins.REIClientPlugin;
