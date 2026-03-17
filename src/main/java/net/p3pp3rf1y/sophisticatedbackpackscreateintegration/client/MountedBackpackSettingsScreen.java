@@ -2,7 +2,7 @@ package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.BackpackSettingsScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.OpenMountedBackpackInventoryPayload;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.utils.Position;

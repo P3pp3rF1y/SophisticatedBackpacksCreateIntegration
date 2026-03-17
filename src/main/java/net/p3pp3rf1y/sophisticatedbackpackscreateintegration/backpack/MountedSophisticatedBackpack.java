@@ -150,7 +150,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	public boolean handleInteraction(ServerPlayer player, Contraption contraption, StructureTemplate.StructureBlockInfo info) {
-		ServerLevel level = player.serverLevel();
+		ServerLevel level = player.level();
 		int contraptionEntityId = contraption.entity.getId();
 		BlockPos localPos = info.pos();
 
