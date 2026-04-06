@@ -9,10 +9,6 @@ import me.shedaniel.rei.forge.REIPluginClient;
 import net.minecraft.client.renderer.Rect2i;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
-import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiCraftingContainerTransferHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiSettingsGhostIngredientHandler;
-import net.p3pp3rf1y.sophisticatedcore.compat.recipeviewers.rei.ReiStorageGhostIngredientHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +31,9 @@ public class BackpackCreateReiClientPlugin implements REIClientPlugin {
 
 	@Override
 	public void registerScreens(ScreenRegistry registry) {
-		registry.registerDraggableStackVisitor(new ReiStorageGhostIngredientHandler<>(MountedBackpackScreen.class));
-		registry.registerDraggableStackVisitor(new ReiSettingsGhostIngredientHandler<>(MountedBackpackSettingsScreen.class));
 	}
 
 	@Override
 	public void registerTransferHandlers(TransferHandlerRegistry registry) {
-		registry.register(ReiCraftingContainerTransferHandler.crafting(MountedBackpackContainerMenu.class));
 	}
 }

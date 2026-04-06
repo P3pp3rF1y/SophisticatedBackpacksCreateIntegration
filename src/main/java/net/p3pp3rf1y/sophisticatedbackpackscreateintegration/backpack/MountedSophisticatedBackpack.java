@@ -258,9 +258,9 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 			refreshRenderBlockEntity();
 			updateRenderAttributes = false;
 		}
-		if (level.random.nextInt(10) == 0) {
+		if (level.getRandom().nextInt(10) == 0) {
 			RenderDataHandler renderDataHandler = getStorageWrapper().getRenderDataHandler();
-			renderUpgrades(level, level.random, renderDataHandler);
+			renderUpgrades(level, level.getRandom(), renderDataHandler);
 		}
 	}
 
