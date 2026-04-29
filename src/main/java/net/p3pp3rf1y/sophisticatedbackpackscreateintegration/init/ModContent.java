@@ -64,7 +64,7 @@ public class ModContent {
 	}
 
 	private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-		PayloadRegistrar registrar = event.registrar(SophisticatedBackpacksCreateIntegration.MOD_ID).versioned("1.0");
+		PayloadRegistrar registrar = event.registrar(SophisticatedBackpacksCreateIntegration.MOD_ID).versioned(SophisticatedBackpacksCreateIntegration.getNetworkProtocolVersion());
 		registrar.playToServer(OpenMountedBackpackInventoryPayload.TYPE, OpenMountedBackpackInventoryPayload.STREAM_CODEC, OpenMountedBackpackInventoryPayload::handlePayload);
 		registrar.playToServer(MountedSubBackpackOpenPayload.TYPE, MountedSubBackpackOpenPayload.STREAM_CODEC, MountedSubBackpackOpenPayload::handlePayload);
 	}
