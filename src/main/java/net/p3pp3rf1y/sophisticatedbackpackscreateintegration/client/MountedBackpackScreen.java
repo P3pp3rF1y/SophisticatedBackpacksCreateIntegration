@@ -28,10 +28,13 @@ public class MountedBackpackScreen extends StorageScreenBase<MountedBackpackCont
 
 	@Override
 	public boolean keyPressed(KeyEvent event) {
-		if (getFocused() != null) {
+		if (isTextBoxFocused()) {
 			return super.keyPressed(event);
 		}
 		if (event.key() == 256 || KeybindHandler.BACKPACK_OPEN_KEYBIND.isActiveAndMatches(InputConstants.getKey(event))) {
+			if (getFocused() != null && !clearFocusedWidget()) {
+				return super.keyPressed(event);
+			}
 			if (!getMenu().isFirstLevelStorage()) {
 				ClientPacketDistributor.sendToServer(OpenMountedBackpackInventoryPayload.INSTANCE);
 				return true;
