@@ -22,11 +22,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock;
 import net.p3pp3rf1y.sophisticatedbackpacks.init.ModBlocks;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpacksCreateIntegration;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSophisticatedBackpackType;
-import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenMessage;
-import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.OpenMountedBackpackInventoryMessage;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.SophisticatedBackpackMovementBehaviour;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackSettingsContainerMenu;
@@ -68,11 +65,7 @@ public class ModContent {
 				.forEach(block -> {
 					MountedItemStorageType.REGISTRY.register(block, SOPHISTICATED_MOUNTED_BACKPACK_TYPE.get());
 					MovementBehaviour.REGISTRY.register(block, SophisticatedBackpackMovementBehaviour.INSTANCE);
-				});
-		SafeNbtWriterRegistry.REGISTRY.register(ModBlocks.BACKPACK_TILE_TYPE.get(), SophisticatedBackpackSafeNbtWriter.INSTANCE);
-		event.enqueueWork(() -> {
-			SBPPacketHandler.INSTANCE.registerMessage(OpenMountedBackpackInventoryMessage.class, OpenMountedBackpackInventoryMessage::encode, OpenMountedBackpackInventoryMessage::decode, OpenMountedBackpackInventoryMessage::onMessage);
-			SBPPacketHandler.INSTANCE.registerMessage(MountedSubBackpackOpenMessage.class, MountedSubBackpackOpenMessage::encode, MountedSubBackpackOpenMessage::decode, MountedSubBackpackOpenMessage::onMessage);
 		});
+		SafeNbtWriterRegistry.REGISTRY.register(ModBlocks.BACKPACK_TILE_TYPE.get(), SophisticatedBackpackSafeNbtWriter.INSTANCE);
 	}
 }

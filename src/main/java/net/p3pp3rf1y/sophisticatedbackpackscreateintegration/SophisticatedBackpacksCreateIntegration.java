@@ -2,11 +2,13 @@ package net.p3pp3rf1y.sophisticatedbackpackscreateintegration;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModCompat;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.network.BackpackCreatePacketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,8 +16,10 @@ import org.apache.logging.log4j.Logger;
 public class SophisticatedBackpacksCreateIntegration {
 	public static final String MOD_ID = "sophisticatedbackpackscreateintegration";
 	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+	private static String networkProtocolVersion;
 
 	public SophisticatedBackpacksCreateIntegration() {
+		networkProtocolVersion = ModLoadingContext.get().getActiveContainer().getModInfo().getVersion().toString();
 		IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 		ModContent.registerHandler(modBus);
 		modBus.addListener(SophisticatedBackpacksCreateIntegration::setup);
@@ -23,6 +27,7 @@ public class SophisticatedBackpacksCreateIntegration {
 	}
 
 	private static void setup(FMLCommonSetupEvent event) {
+		BackpackCreatePacketHandler.INSTANCE.init();
 		ModCompat.compatsSetup();
 	}
 
@@ -32,5 +37,9 @@ public class SophisticatedBackpacksCreateIntegration {
 
 	public static String getRegistryName(String regName) {
 		return MOD_ID + ":" + regName;
+	}
+
+	public static String getNetworkProtocolVersion() {
+		return networkProtocolVersion;
 	}
 }

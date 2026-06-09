@@ -14,11 +14,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.KeybindHandler;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenMessage;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.client.MountedBackpackSettingsScreen;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.network.BackpackCreatePacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageInventorySlot;
 import net.p3pp3rf1y.sophisticatedcore.compat.trashslot.TrashSlotScreenRegistry;
 
@@ -78,7 +78,7 @@ public class ModContentClient {
 
 			if (mountedBackpackScreen.getMenu().isFirstLevelStorage() && slot instanceof StorageInventorySlot && slot.getItem().getItem() instanceof BackpackItem && slot.getItem().getCount() == 1) {
 				mountedBackpackScreen.getMenu().getContext().getSubBackpackContext(slot.index);
-				SBPPacketHandler.INSTANCE.sendToServer(new MountedSubBackpackOpenMessage(slot.index));
+				BackpackCreatePacketHandler.INSTANCE.sendToServer(new MountedSubBackpackOpenMessage(slot.index));
 				return true;
 			}
 		}

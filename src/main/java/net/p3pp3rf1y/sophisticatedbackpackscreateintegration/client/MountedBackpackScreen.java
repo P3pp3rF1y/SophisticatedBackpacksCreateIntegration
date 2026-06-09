@@ -6,9 +6,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.KeybindHandler;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.IBackpackScreen;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.SBPTranslationHelper;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.OpenMountedBackpackInventoryMessage;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.network.BackpackCreatePacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.client.gui.StorageScreenBase;
 
 public class MountedBackpackScreen extends StorageScreenBase<MountedBackpackContainerMenu> implements IBackpackScreen {
@@ -35,7 +35,7 @@ public class MountedBackpackScreen extends StorageScreenBase<MountedBackpackCont
 				return super.keyPressed(keyCode, scanCode, modifiers);
 			}
 			if (!getMenu().isFirstLevelStorage()) {
-				SBPPacketHandler.INSTANCE.sendToServer(OpenMountedBackpackInventoryMessage.INSTANCE);
+				BackpackCreatePacketHandler.INSTANCE.sendToServer(OpenMountedBackpackInventoryMessage.INSTANCE);
 				return true;
 			}
 		}
