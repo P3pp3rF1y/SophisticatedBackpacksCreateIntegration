@@ -63,7 +63,7 @@ public class ModContentClient {
 	}
 
 	private static boolean sendBackpackOpenOrCloseMessage() {
-		Screen screen = Minecraft.getInstance().screen;
+		Screen screen = Minecraft.getInstance().gui.screen();
 		if (screen instanceof MountedBackpackScreen mountedBackpackScreen) {
 			Slot slot = mountedBackpackScreen.getSlotUnderMouse();
 
