@@ -15,4 +15,3 @@ public class ModCompat {
 		CompatRegistry.registerCompat(new CompatInfo(CompatModIds.TRASH_SLOT), () -> mobBus -> new TrashSlotCompat());
 	}
 }
-

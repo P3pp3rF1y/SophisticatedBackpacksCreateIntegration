@@ -28,7 +28,8 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 	}
 
 	public MountedBackpackContainerMenu(MenuType<?> menuType, int containerId, Player player, MountedBackpackContext context) {
-		super(menuType, containerId, player, context.getBackpackWrapper(player), context.getParentBackpackWrapper(player).orElse(NoopStorageWrapper.INSTANCE), -1, false, context.getContraptionEntityId(), context.getLocalPos());
+		super(menuType, containerId, player, context.getBackpackWrapper(player), context.getParentBackpackWrapper(player).orElse(NoopStorageWrapper.INSTANCE),
+				-1, false, context.getContraptionEntityId(), context.getLocalPos());
 		this.context = context;
 	}
 
@@ -46,7 +47,8 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 	}
 
 	@Override
-	protected MountedStorageSettingsContainerMenuBase instantiateSettingsContainerMenu(int windowId, Player player, int contraptionEntityId, BlockPos localPos) {
+	protected MountedStorageSettingsContainerMenuBase instantiateSettingsContainerMenu(int windowId, Player player, int contraptionEntityId,
+			BlockPos localPos) {
 		return new MountedBackpackSettingsContainerMenu(windowId, player, context);
 	}
 
