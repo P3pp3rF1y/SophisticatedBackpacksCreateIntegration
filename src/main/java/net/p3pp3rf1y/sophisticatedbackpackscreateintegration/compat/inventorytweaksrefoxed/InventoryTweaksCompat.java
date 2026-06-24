@@ -15,12 +15,13 @@ public class InventoryTweaksCompat implements ICompat {
 
 	private void sendImc(InterModEnqueueEvent evt) {
 		evt.enqueueWork(() -> {
-			InterModComms.sendTo("invtweaks", "blacklist-screen", () -> "net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu");
+			InterModComms.sendTo("invtweaks", "blacklist-screen",
+					() -> "net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu");
 		});
 	}
 
 	@Override
 	public void setup() {
-		//noop
+		// noop
 	}
 }

@@ -7,6 +7,7 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackp
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackSettingsContainerMenu;
 
 import javax.annotation.Nullable;
+
 import java.util.function.Supplier;
 
 public class OpenMountedBackpackInventoryMessage {
@@ -16,7 +17,7 @@ public class OpenMountedBackpackInventoryMessage {
 	}
 
 	public static void encode(OpenMountedBackpackInventoryMessage msg, FriendlyByteBuf buffer) {
-		//noop
+		// noop
 	}
 
 	public static OpenMountedBackpackInventoryMessage decode(FriendlyByteBuf buffer) {

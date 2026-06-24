@@ -33,21 +33,20 @@ import java.util.function.Supplier;
 
 public class ModContent {
 	private static final CreateRegistrate REGISTRATE = CreateRegistrate.create(SophisticatedBackpacksCreateIntegration.MOD_ID)
-			.defaultCreativeTab((ResourceKey<CreativeModeTab>) null)
-			.setTooltipModifierFactory(item ->
-					new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
-							.andThen(TooltipModifier.mapNull(KineticStats.create(item)))
-			);
+			.defaultCreativeTab((ResourceKey<CreativeModeTab>) null).setTooltipModifierFactory(
+					item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE).andThen(TooltipModifier.mapNull(KineticStats.create(item))));
 
-	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, SophisticatedBackpacksCreateIntegration.MOD_ID);
+	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES,
+			SophisticatedBackpacksCreateIntegration.MOD_ID);
 
-	public static final RegistryEntry<MountedSophisticatedBackpackType> SOPHISTICATED_MOUNTED_BACKPACK_TYPE = REGISTRATE.mountedItemStorage("sophisticated_backpack", MountedSophisticatedBackpackType::new).register();
+	public static final RegistryEntry<MountedSophisticatedBackpackType> SOPHISTICATED_MOUNTED_BACKPACK_TYPE = REGISTRATE
+			.mountedItemStorage("sophisticated_backpack", MountedSophisticatedBackpackType::new).register();
 
 	public static final Supplier<MenuType<MountedBackpackContainerMenu>> MOUNTED_BACKPACK_CONTAINER_TYPE = MENU_TYPES.register("mounted_backpack",
 			() -> IForgeMenuType.create(MountedBackpackContainerMenu::fromBuffer));
 
-	public static final Supplier<MenuType<MountedBackpackSettingsContainerMenu>> MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE = MENU_TYPES.register("mounted_backpack_settings",
-			() -> IForgeMenuType.create(MountedBackpackSettingsContainerMenu::fromBuffer));
+	public static final Supplier<MenuType<MountedBackpackSettingsContainerMenu>> MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE = MENU_TYPES
+			.register("mounted_backpack_settings", () -> IForgeMenuType.create(MountedBackpackSettingsContainerMenu::fromBuffer));
 
 	public static void registerHandler(IEventBus modBus) {
 		REGISTRATE.registerEventListeners(modBus);
@@ -61,10 +60,9 @@ public class ModContent {
 	}
 
 	private static void onModSetup(FMLCommonSetupEvent event) {
-		BuiltInRegistries.BLOCK.stream().filter(block -> block instanceof BackpackBlock)
-				.forEach(block -> {
-					MountedItemStorageType.REGISTRY.register(block, SOPHISTICATED_MOUNTED_BACKPACK_TYPE.get());
-					MovementBehaviour.REGISTRY.register(block, SophisticatedBackpackMovementBehaviour.INSTANCE);
+		BuiltInRegistries.BLOCK.stream().filter(block -> block instanceof BackpackBlock).forEach(block -> {
+			MountedItemStorageType.REGISTRY.register(block, SOPHISTICATED_MOUNTED_BACKPACK_TYPE.get());
+			MovementBehaviour.REGISTRY.register(block, SophisticatedBackpackMovementBehaviour.INSTANCE);
 		});
 		SafeNbtWriterRegistry.REGISTRY.register(ModBlocks.BACKPACK_TILE_TYPE.get(), SophisticatedBackpackSafeNbtWriter.INSTANCE);
 	}

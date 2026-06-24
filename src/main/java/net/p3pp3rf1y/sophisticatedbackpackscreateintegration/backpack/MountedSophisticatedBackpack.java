@@ -45,15 +45,17 @@ import net.p3pp3rf1y.sophisticatedcore.util.InventoryHelper;
 import net.p3pp3rf1y.sophisticatedcore.util.NBTHelper;
 
 import javax.annotation.Nullable;
+
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock.*;
+import static net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock.BATTERY;
+import static net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock.LEFT_TANK;
+import static net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock.RIGHT_TANK;
 
 public class MountedSophisticatedBackpack extends MountedStorageBase {
-	public static final Codec<MountedSophisticatedBackpack> CODEC = ItemStack.CODEC.xmap(
-			MountedSophisticatedBackpack::new, MountedSophisticatedBackpack::getStorageStack
-	);
+	public static final Codec<MountedSophisticatedBackpack> CODEC = ItemStack.CODEC.xmap(MountedSophisticatedBackpack::new,
+			MountedSophisticatedBackpack::getStorageStack);
 
 	private IBackpackWrapper backpackWrapper = IBackpackWrapper.Noop.INSTANCE;
 
@@ -147,9 +149,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 	}
 
 	public static void openMenu(ServerPlayer player, MountedBackpackContext context) {
-		NetworkHooks.openScreen(
-				player,
-				new SimpleMenuProvider((w, p, pl) -> createMenu(w, pl, context), context.getDisplayName(player)), context::toBuffer);
+		NetworkHooks.openScreen(player, new SimpleMenuProvider((w, p, pl) -> createMenu(w, pl, context), context.getDisplayName(player)), context::toBuffer);
 	}
 
 	@Override
@@ -222,7 +222,8 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 	}
 
 	private void runTickableUpgrades(Level level) {
-		getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class).forEach(upgrade -> upgrade.tick(getEntity(), level, new BlockPos((int) getPosition().x(), (int) getPosition().y(), (int) getPosition().z())));
+		getStorageWrapper().getUpgradeHandler().getWrappersThatImplement(ITickableUpgrade.class)
+				.forEach(upgrade -> upgrade.tick(getEntity(), level, new BlockPos((int) getPosition().x(), (int) getPosition().y(), (int) getPosition().z())));
 	}
 
 	private void runPickupOnItemEntities(Level level) {
@@ -262,13 +263,15 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 		if (Minecraft.getInstance().isPaused()) {
 			return;
 		}
-		renderInfo.getUpgradeRenderData().forEach((type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type)
-				.ifPresent(renderer -> renderUpgrade(renderer, level, rand, type, data)));
+		renderInfo.getUpgradeRenderData().forEach(
+				(type, data) -> UpgradeRenderRegistry.getUpgradeRenderer(type).ifPresent(renderer -> renderUpgrade(renderer, level, rand, type, data)));
 	}
 
-	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, UpgradeRenderDataType<?> type, IUpgradeRenderData data) {
-		//noinspection unchecked
-		type.cast(data).ifPresent(renderData -> renderer.render(level, rand, vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + 0.8f, (float) getPosition().z()), (T) renderData));
+	private <T extends IUpgradeRenderData> void renderUpgrade(IUpgradeRenderer<T> renderer, Level level, RandomSource rand, UpgradeRenderDataType<?> type,
+			IUpgradeRenderData data) {
+		// noinspection unchecked
+		type.cast(data).ifPresent(renderData -> renderer.render(level, rand,
+				vector -> vector.add((float) getPosition().x(), (float) getPosition().y() + 0.8f, (float) getPosition().z()), (T) renderData));
 	}
 
 	private boolean isStackDirty() {
@@ -311,8 +314,8 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	public void clearNbt() {
 		if (!clearedNbt && getEntity() instanceof AbstractContraptionEntity abstractContraptionEntity) {
-			abstractContraptionEntity.getContraption().getBlocks()
-					.computeIfPresent(localPos, (p, blockInfo) -> new StructureTemplate.StructureBlockInfo(blockInfo.pos(), blockInfo.state(), null));
+			abstractContraptionEntity.getContraption().getBlocks().computeIfPresent(localPos,
+					(p, blockInfo) -> new StructureTemplate.StructureBlockInfo(blockInfo.pos(), blockInfo.state(), null));
 			clearedNbt = true;
 		}
 	}
@@ -322,4 +325,3 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 		return getStorageWrapper().getInventoryForInputOutput();
 	}
 }
-
