@@ -16,7 +16,7 @@ public class SophisticatedBackpacksCreateIntegration {
 	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 	private static String networkProtocolVersion;
 
-	@SuppressWarnings("java:S1118") //needs to be public for mod to work
+	@SuppressWarnings("java:S1118") // needs to be public for mod to work
 	public SophisticatedBackpacksCreateIntegration(IEventBus modBus, Dist dist, ModContainer container) {
 		networkProtocolVersion = container.getModInfo().getVersion().toString();
 		ModContent.registerHandler(modBus);

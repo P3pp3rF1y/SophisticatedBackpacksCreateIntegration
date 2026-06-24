@@ -16,7 +16,8 @@ public class SophisticatedBackpackMovementBehaviour implements MovementBehaviour
 
 	@Override
 	public void tick(MovementContext context) {
-		@Nullable MountedSophisticatedBackpack storage = getMountedSophisticatedBackpack(context);
+		@Nullable
+		MountedSophisticatedBackpack storage = getMountedSophisticatedBackpack(context);
 		if (storage != null) {
 			storage.initEntityLevelAndPositions(context);
 			storage.clearNbt();
@@ -24,10 +25,11 @@ public class SophisticatedBackpackMovementBehaviour implements MovementBehaviour
 		}
 	}
 
-	//TODO replace with direct call to context.getItemStorage once this is fixed for when storage is synced and new instance is created on client
+	// TODO replace with direct call to context.getItemStorage once this is fixed for when storage is synced and new instance is created on client
 	@Nullable
 	private MountedSophisticatedBackpack getMountedSophisticatedBackpack(MovementContext context) {
-		if (ContraptionHelper.getMountedStorage(context.contraption.entity, context.localPos) instanceof MountedSophisticatedBackpack mountedSophisticatedStorage) {
+		if (ContraptionHelper.getMountedStorage(context.contraption.entity,
+				context.localPos) instanceof MountedSophisticatedBackpack mountedSophisticatedStorage) {
 			return mountedSophisticatedStorage;
 		}
 
@@ -36,7 +38,8 @@ public class SophisticatedBackpackMovementBehaviour implements MovementBehaviour
 
 	@Override
 	public void visitNewPosition(MovementContext context, BlockPos pos) {
-		@Nullable MountedSophisticatedBackpack storage = getMountedSophisticatedBackpack(context);
+		@Nullable
+		MountedSophisticatedBackpack storage = getMountedSophisticatedBackpack(context);
 		if (storage != null) {
 			storage.setPosition(new Vec3(pos.getX(), pos.getY(), pos.getZ()));
 		}

@@ -60,16 +60,17 @@ public class BackpackCreatePlugin implements IModPlugin {
 	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 		IRecipeTransferHandlerHelper handlerHelper = registration.getTransferHelper();
 		IStackHelper stackHelper = registration.getJeiHelpers().getStackHelper();
-		registration.addRecipeTransferHandler(new JeiCraftingContainerRecipeTransferHandlerBase<MountedBackpackContainerMenu, RecipeHolder<CraftingRecipe>>(handlerHelper, stackHelper) {
-			@Override
-			public Class<MountedBackpackContainerMenu> getContainerClass() {
-				return MountedBackpackContainerMenu.class;
-			}
+		registration.addRecipeTransferHandler(
+				new JeiCraftingContainerRecipeTransferHandlerBase<MountedBackpackContainerMenu, RecipeHolder<CraftingRecipe>>(handlerHelper, stackHelper) {
+					@Override
+					public Class<MountedBackpackContainerMenu> getContainerClass() {
+						return MountedBackpackContainerMenu.class;
+					}
 
-			@Override
-			public mezz.jei.api.recipe.RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
-				return RecipeTypes.CRAFTING;
-			}
-		}, RecipeTypes.CRAFTING);
+					@Override
+					public mezz.jei.api.recipe.RecipeType<RecipeHolder<CraftingRecipe>> getRecipeType() {
+						return RecipeTypes.CRAFTING;
+					}
+				}, RecipeTypes.CRAFTING);
 	}
 }
