@@ -30,17 +30,20 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.schematic.Sophistic
 import java.util.function.Supplier;
 
 public class ModContent {
-	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU, SophisticatedBackpacksCreateIntegration.MOD_ID);
+	private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(BuiltInRegistries.MENU,
+			SophisticatedBackpacksCreateIntegration.MOD_ID);
 
-	public static final DeferredRegister<MountedItemStorageType<?>> ITEM_STORAGE_TYPES = DeferredRegister.create(CreateBuiltInRegistries.MOUNTED_ITEM_STORAGE_TYPE, SophisticatedBackpacks.MOD_ID);
+	public static final DeferredRegister<MountedItemStorageType<?>> ITEM_STORAGE_TYPES = DeferredRegister
+			.create(CreateBuiltInRegistries.MOUNTED_ITEM_STORAGE_TYPE, SophisticatedBackpacks.MOD_ID);
 
-	public static final DeferredHolder<MountedItemStorageType<?>, MountedSophisticatedBackpackType> SOPHISTICATED_MOUNTED_BACKPACK_TYPE = ITEM_STORAGE_TYPES.register("sophisticated_backpack", MountedSophisticatedBackpackType::new);
+	public static final DeferredHolder<MountedItemStorageType<?>, MountedSophisticatedBackpackType> SOPHISTICATED_MOUNTED_BACKPACK_TYPE = ITEM_STORAGE_TYPES
+			.register("sophisticated_backpack", MountedSophisticatedBackpackType::new);
 
 	public static final Supplier<MenuType<MountedBackpackContainerMenu>> MOUNTED_BACKPACK_CONTAINER_TYPE = MENU_TYPES.register("mounted_backpack",
 			() -> IMenuTypeExtension.create(MountedBackpackContainerMenu::fromBuffer));
 
-	public static final Supplier<MenuType<MountedBackpackSettingsContainerMenu>> MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE = MENU_TYPES.register("mounted_backpack_settings",
-			() -> IMenuTypeExtension.create(MountedBackpackSettingsContainerMenu::fromBuffer));
+	public static final Supplier<MenuType<MountedBackpackSettingsContainerMenu>> MOUNTED_BACKPACK_SETTINGS_CONTAINER_TYPE = MENU_TYPES
+			.register("mounted_backpack_settings", () -> IMenuTypeExtension.create(MountedBackpackSettingsContainerMenu::fromBuffer));
 
 	public static void registerHandler(IEventBus modBus) {
 		ITEM_STORAGE_TYPES.register(modBus);
@@ -55,17 +58,18 @@ public class ModContent {
 	}
 
 	private static void onModSetup(FMLCommonSetupEvent event) {
-		BuiltInRegistries.BLOCK.stream().filter(block -> block instanceof BackpackBlock)
-				.forEach(block -> {
-					MountedItemStorageType.REGISTRY.register(block, SOPHISTICATED_MOUNTED_BACKPACK_TYPE.get());
-					MovementBehaviour.REGISTRY.register(block, SophisticatedBackpackMovementBehaviour.INSTANCE);
-				});
+		BuiltInRegistries.BLOCK.stream().filter(block -> block instanceof BackpackBlock).forEach(block -> {
+			MountedItemStorageType.REGISTRY.register(block, SOPHISTICATED_MOUNTED_BACKPACK_TYPE.get());
+			MovementBehaviour.REGISTRY.register(block, SophisticatedBackpackMovementBehaviour.INSTANCE);
+		});
 		SafeNbtWriterRegistry.REGISTRY.register(ModBlocks.BACKPACK_TILE_TYPE.get(), SophisticatedBackpackSafeNbtWriter.INSTANCE);
 	}
 
 	private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-		PayloadRegistrar registrar = event.registrar(SophisticatedBackpacksCreateIntegration.MOD_ID).versioned(SophisticatedBackpacksCreateIntegration.getNetworkProtocolVersion());
-		registrar.playToServer(OpenMountedBackpackInventoryPayload.TYPE, OpenMountedBackpackInventoryPayload.STREAM_CODEC, OpenMountedBackpackInventoryPayload::handlePayload);
+		PayloadRegistrar registrar = event.registrar(SophisticatedBackpacksCreateIntegration.MOD_ID)
+				.versioned(SophisticatedBackpacksCreateIntegration.getNetworkProtocolVersion());
+		registrar.playToServer(OpenMountedBackpackInventoryPayload.TYPE, OpenMountedBackpackInventoryPayload.STREAM_CODEC,
+				OpenMountedBackpackInventoryPayload::handlePayload);
 		registrar.playToServer(MountedSubBackpackOpenPayload.TYPE, MountedSubBackpackOpenPayload.STREAM_CODEC, MountedSubBackpackOpenPayload::handlePayload);
 	}
 }

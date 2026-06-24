@@ -22,7 +22,7 @@ public class BackpackCreateEmiPlugin implements EmiPlugin {
 
 	private void registerGuiHandlers(EmiRegistry registry) {
 		registry.addExclusionArea(MountedBackpackScreen.class, (screen, consumer) -> {
-			//noinspection ConstantValue
+			// noinspection ConstantValue
 			if (screen == null || screen.getUpgradeSettingsControl() == null) {
 				return;
 			}
