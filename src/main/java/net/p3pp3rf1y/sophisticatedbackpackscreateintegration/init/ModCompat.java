@@ -13,4 +13,3 @@ public class ModCompat {
 		CompatRegistry.registerCompat(new CompatInfo(CompatModIds.INVENTORY_TWEAKS), () -> mobBus -> new InventoryTweaksCompat());
 	}
 }
-

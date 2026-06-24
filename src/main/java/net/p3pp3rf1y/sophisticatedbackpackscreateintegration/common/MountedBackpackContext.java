@@ -18,6 +18,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageBase;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 
 import javax.annotation.Nullable;
+
 import java.util.Optional;
 
 public class MountedBackpackContext {
@@ -66,7 +67,7 @@ public class MountedBackpackContext {
 		addToBuffer(buffer);
 	}
 
-	public void addToBuffer(FriendlyByteBuf buffer){
+	public void addToBuffer(FriendlyByteBuf buffer) {
 		buffer.writeInt(contraptionEntityId);
 		buffer.writeBlockPos(localPos);
 	}
@@ -119,14 +120,13 @@ public class MountedBackpackContext {
 
 		@Override
 		public IStorageWrapper getBackpackWrapper(Player player) {
-			return getParentBackpackWrapper(player)
-					.map(parent -> {
-						ItemStack stackInSlot = parent.getInventoryHandler().getStackInSlot(subBackpackSlotIndex);
-						if (!(stackInSlot.getItem() instanceof BackpackItem)) {
-							return IBackpackWrapper.Noop.INSTANCE;
-						}
-						return BackpackWrapper.fromStack(stackInSlot);
-					}).orElse(IBackpackWrapper.Noop.INSTANCE);
+			return getParentBackpackWrapper(player).map(parent -> {
+				ItemStack stackInSlot = parent.getInventoryHandler().getStackInSlot(subBackpackSlotIndex);
+				if (!(stackInSlot.getItem() instanceof BackpackItem)) {
+					return IBackpackWrapper.Noop.INSTANCE;
+				}
+				return BackpackWrapper.fromStack(stackInSlot);
+			}).orElse(IBackpackWrapper.Noop.INSTANCE);
 		}
 
 		@Override

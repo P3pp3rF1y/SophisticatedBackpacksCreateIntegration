@@ -12,14 +12,13 @@ import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsPayload;
 import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
-import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
 
 import java.util.UUID;
 
 public class MountedBackpackSettingsContainerMenu extends MountedStorageSettingsContainerMenuBase {
 	static {
-		SettingsContainerMenu.addFactory(BackpackMainSettingsCategory.NAME, BackpackMainSettingsContainer::new);
+		addFactory(BackpackMainSettingsCategory.NAME, BackpackMainSettingsContainer::new);
 	}
 
 	private final MountedBackpackContext context;
