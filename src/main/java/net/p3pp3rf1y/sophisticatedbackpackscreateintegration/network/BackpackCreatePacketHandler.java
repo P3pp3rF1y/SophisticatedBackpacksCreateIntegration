@@ -1,5 +1,6 @@
 package net.p3pp3rf1y.sophisticatedbackpackscreateintegration.network;
 
+import net.minecraftforge.network.NetworkDirection;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpacksCreateIntegration;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenMessage;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.OpenMountedBackpackInventoryMessage;
@@ -16,8 +17,8 @@ public class BackpackCreatePacketHandler extends PacketHandler {
 	@Override
 	public void registerMessages() {
 		registerMessage(OpenMountedBackpackInventoryMessage.class, OpenMountedBackpackInventoryMessage::encode, OpenMountedBackpackInventoryMessage::decode,
-				OpenMountedBackpackInventoryMessage::onMessage);
+				OpenMountedBackpackInventoryMessage::onMessage, NetworkDirection.PLAY_TO_SERVER);
 		registerMessage(MountedSubBackpackOpenMessage.class, MountedSubBackpackOpenMessage::encode, MountedSubBackpackOpenMessage::decode,
-				MountedSubBackpackOpenMessage::onMessage);
+				MountedSubBackpackOpenMessage::onMessage, NetworkDirection.PLAY_TO_SERVER);
 	}
 }
