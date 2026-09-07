@@ -19,6 +19,7 @@ import net.p3pp3rf1y.sophisticatedbackpacks.SophisticatedBackpacks;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock;
 import net.p3pp3rf1y.sophisticatedbackpacks.init.ModBlocks;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.SophisticatedBackpacksCreateIntegration;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedBackpackClientInfoPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSophisticatedBackpackType;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSubBackpackOpenPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.OpenMountedBackpackInventoryPayload;
@@ -71,5 +72,7 @@ public class ModContent {
 		registrar.playToServer(OpenMountedBackpackInventoryPayload.TYPE, OpenMountedBackpackInventoryPayload.STREAM_CODEC,
 				OpenMountedBackpackInventoryPayload::handlePayload);
 		registrar.playToServer(MountedSubBackpackOpenPayload.TYPE, MountedSubBackpackOpenPayload.STREAM_CODEC, MountedSubBackpackOpenPayload::handlePayload);
+		registrar.playToClient(MountedBackpackClientInfoPayload.TYPE, MountedBackpackClientInfoPayload.STREAM_CODEC,
+				MountedBackpackClientInfoPayload::handlePayload);
 	}
 }
