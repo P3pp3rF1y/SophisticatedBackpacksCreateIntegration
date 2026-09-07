@@ -8,23 +8,34 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.ClientLinkedStorageBackpackContents;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.LinkedStorageBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.SBPTranslationHelper;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsMessage;
+import net.p3pp3rf1y.sophisticatedbackpacks.network.LinkedStorageBackpackContentsMessage;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedBackpackClientInfoMessage;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.network.BackpackCreatePacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.StorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContentsBinding;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.upgrades.UpgradeHandler;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBase implements ISyncedContainer {
 	private final MountedBackpackContext context;
+	private CompoundTag lastLinkedSettingsNbt = null;
 
 	public MountedBackpackContainerMenu(int containerId, Player player, MountedBackpackContext context) {
 		this(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), containerId, player, context);
@@ -62,12 +73,85 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	@Override
 	protected void writeSettingsContainerMenuExtraData(FriendlyByteBuf buffer) {
-		context.toBuffer(buffer);
+		context.toBuffer(buffer, player);
 	}
 
 	@Override
 	protected CompoundTag getSettingsTag(CompoundTag contents) {
 		return contents.getCompound(BackpackSettingsHandler.SETTINGS_TAG);
+	}
+
+	@Override
+	protected void sendStorageSettingsToClient() {
+		if (player.level().isClientSide) {
+			return;
+		}
+
+		Optional<UUID> groupId = getLinkedStorageGroupId();
+		if (player instanceof ServerPlayer serverPlayer && groupId.isPresent()) {
+			CompoundTag settingsNbt = storageWrapper.getSettingsHandler().getNbt();
+			if (lastLinkedSettingsNbt == null || !lastLinkedSettingsNbt.equals(settingsNbt)) {
+				lastLinkedSettingsNbt = settingsNbt.copy();
+				SBPPacketHandler.INSTANCE.sendToClient(serverPlayer,
+						LinkedStorageBackpackContentsMessage.createSnapshot(serverPlayer.serverLevel(), groupId.get()));
+			}
+			return;
+		}
+
+		super.sendStorageSettingsToClient();
+	}
+
+	@Override
+	public boolean detectSettingsChangeAndReload() {
+		Optional<UUID> groupId = getLinkedStorageGroupId();
+		if (groupId.isPresent()) {
+			if (player.level().isClientSide && ClientLinkedStorageBackpackContents.removeUpdatedGroup(groupId.get())) {
+				ILinkedStorageContentsBinding contents = ClientLinkedStorageBackpackContents.getBinding(groupId.get())
+						.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + groupId.get()));
+				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents());
+				return true;
+			}
+			return false;
+		}
+
+		return super.detectSettingsChangeAndReload();
+	}
+
+	@Override
+	public void removed(Player player) {
+		super.removed(player);
+		context.close();
+	}
+
+	public void syncClientInfo(CompoundTag renderInfoNbt, int previousPhysicalColumnsTaken, int columnsTaken) {
+		boolean columnsChanged = previousPhysicalColumnsTaken != columnsTaken;
+		storageWrapper.getRenderInfo().deserializeFrom(renderInfoNbt);
+		storageWrapper.setColumnsTaken(columnsTaken, false);
+		if (columnsChanged) {
+			storageWrapper.onContentsNbtUpdated();
+			refreshAllSlots();
+			onUpgradesChanged();
+		}
+	}
+
+	public void syncClientProfile(CompoundTag renderInfoNbt, int columnsTaken) {
+		syncClientInfo(renderInfoNbt, storageWrapper.getColumnsTaken(), columnsTaken);
+	}
+
+	@Override
+	protected void onUpgradeChanged() {
+		if (player instanceof ServerPlayer serverPlayer && storageWrapper instanceof IBackpackWrapper backpackWrapper
+				&& !(backpackWrapper instanceof LinkedStorageBackpackWrapper)) {
+			BackpackCreatePacketHandler.INSTANCE.sendToClient(serverPlayer, new MountedBackpackClientInfoMessage(context.getContraptionEntityId(),
+					context.getLocalPos(), backpackWrapper.getRenderInfo().getNbt().copy(), backpackWrapper.getColumnsTaken()));
+		}
+	}
+
+	private Optional<UUID> getLinkedStorageGroupId() {
+		if (!(storageWrapper instanceof IBackpackWrapper backpackWrapper)) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(LinkedStorageStackData.getEndpoint(backpackWrapper.getBackpack())).map(LinkedStorageEndpointData::groupId);
 	}
 
 	@Override

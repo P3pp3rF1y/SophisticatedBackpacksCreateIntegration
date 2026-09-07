@@ -16,6 +16,12 @@ public class MountedSophisticatedBackpackType extends MountedItemStorageType<Mou
 
 	@Override
 	public @Nullable MountedSophisticatedBackpack mount(Level level, BlockState state, BlockPos pos, @Nullable BlockEntity be) {
-		return be instanceof BackpackBlockEntity backpackBe ? MountedSophisticatedBackpack.from(backpackBe) : null;
+		if (!(be instanceof BackpackBlockEntity backpackBe)) {
+			return null;
+		}
+
+		MountedSophisticatedBackpack mountedBackpack = MountedSophisticatedBackpack.from(backpackBe);
+		mountedBackpack.initializeStorage(level);
+		return mountedBackpack;
 	}
 }
