@@ -159,6 +159,10 @@ public class MountedSophisticatedBackpack extends MountedStorageBase implements 
 		return backpackWrapper;
 	}
 
+	public IStorageWrapper getStorageWrapperForMenu() {
+		return getStorageWrapper();
+	}
+
 	private void configureBackpackWrapper(IBackpackWrapper wrapper) {
 		wrapper.setContentsChangeHandler(this::onStackChanged);
 		if (wrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper) {

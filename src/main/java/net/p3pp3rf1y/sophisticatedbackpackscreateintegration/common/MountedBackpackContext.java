@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
-import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackLinkedStorageResolver;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.common.gui.BackpackContext;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSophisticatedBackpack;
@@ -41,6 +41,10 @@ public class MountedBackpackContext {
 		if (itemStorage == null) {
 			return NoopStorageWrapper.INSTANCE;
 		}
+		if (itemStorage instanceof MountedSophisticatedBackpack mountedBackpack) {
+			mountedBackpack.setLevel(player.level());
+			return mountedBackpack.getStorageWrapperForMenu();
+		}
 
 		return itemStorage.getStorageWrapper();
 	}
@@ -64,6 +68,18 @@ public class MountedBackpackContext {
 	public void toBuffer(FriendlyByteBuf buffer) {
 		getType().toBuffer(buffer);
 		addToBuffer(buffer);
+		buffer.writeBoolean(false);
+	}
+
+	public void toBuffer(FriendlyByteBuf buffer, Player player) {
+		getType().toBuffer(buffer);
+		addToBuffer(buffer);
+		IStorageWrapper wrapper = getBackpackWrapper(player);
+		if (wrapper instanceof IBackpackWrapper backpackWrapper) {
+			BackpackContext.writeLinkedStorageSnapshot(buffer, player, backpackWrapper);
+		} else {
+			buffer.writeBoolean(false);
+		}
 	}
 
 	public void addToBuffer(FriendlyByteBuf buffer) {
@@ -73,12 +89,14 @@ public class MountedBackpackContext {
 
 	public static MountedBackpackContext fromBuffer(FriendlyByteBuf buffer) {
 		BackpackContext.ContextType type = BackpackContext.ContextType.fromBuffer(buffer);
-		if (type == BackpackContext.ContextType.ITEM_SUB_BACKPACK) {
-			return SubBackpack.fromBuffer(buffer);
-		} else if (type == BackpackContext.ContextType.ITEM_BACKPACK) {
-			return new MountedBackpackContext(buffer.readInt(), buffer.readBlockPos());
+		MountedBackpackContext context = type == BackpackContext.ContextType.ITEM_SUB_BACKPACK
+				? SubBackpack.fromBuffer(buffer)
+				: type == BackpackContext.ContextType.ITEM_BACKPACK ? new MountedBackpackContext(buffer.readInt(), buffer.readBlockPos()) : null;
+		if (context == null) {
+			throw new IllegalArgumentException();
 		}
-		throw new IllegalArgumentException();
+		BackpackContext.readLinkedStorageSnapshot(buffer);
+		return context;
 	}
 
 	public BackpackContext.ContextType getType() {
@@ -97,6 +115,10 @@ public class MountedBackpackContext {
 		if (mountedStorage instanceof MountedSophisticatedBackpack mountedSophisticatedBackpack) {
 			mountedSophisticatedBackpack.setBlockRenderDirty();
 		}
+	}
+
+	public void close() {
+		// The main wrapper belongs to the mounted storage and outlives individual menus.
 	}
 
 	public static class SubBackpack extends MountedBackpackContext {
@@ -124,7 +146,7 @@ public class MountedBackpackContext {
 				if (!(stackInSlot.getItem() instanceof BackpackItem)) {
 					return IBackpackWrapper.Noop.INSTANCE;
 				}
-				return BackpackWrapper.fromStack(stackInSlot);
+				return BackpackLinkedStorageResolver.resolveOrCreate(player.level(), stackInSlot);
 			}).orElse(IBackpackWrapper.Noop.INSTANCE);
 		}
 

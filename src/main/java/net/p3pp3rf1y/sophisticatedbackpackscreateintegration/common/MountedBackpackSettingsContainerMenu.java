@@ -41,6 +41,12 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 	}
 
 	@Override
+	public void removed(Player player) {
+		super.removed(player);
+		context.close();
+	}
+
+	@Override
 	protected CustomPacketPayload instantiateSettingsPayload(UUID uuid, ContainerContents.SettingsData settingsContents) {
 		return new BackpackSettingsPayload(uuid, settingsContents);
 	}

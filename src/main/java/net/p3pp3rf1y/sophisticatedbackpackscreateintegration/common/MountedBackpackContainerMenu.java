@@ -4,17 +4,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.LinkedStorageBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.client.gui.BackpackTranslationHelper;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackSettingsPayload;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedBackpackClientInfoPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
+import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 
@@ -44,6 +50,11 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 		}
 		storageWrapper.getSettingsHandler().getTypeCategory(ItemDisplaySettingsCategory.class).itemsChanged();
 		context.setBlockRenderDirty(player);
+		if (player instanceof ServerPlayer serverPlayer && storageWrapper instanceof IBackpackWrapper backpackWrapper
+				&& !(backpackWrapper instanceof LinkedStorageBackpackWrapper)) {
+			PacketDistributor.sendToPlayer(serverPlayer, new MountedBackpackClientInfoPayload(context.getContraptionEntityId(), context.getLocalPos(),
+					backpackWrapper.getRenderDataHandler().getData().copy(), backpackWrapper.getColumnsTaken()));
+		}
 	}
 
 	@Override
@@ -54,7 +65,7 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	@Override
 	protected void writeSettingsContainerMenuExtraData(FriendlyByteBuf buffer) {
-		context.toBuffer(buffer);
+		context.toBuffer(buffer, player);
 	}
 
 	@Override
@@ -74,5 +85,26 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	public MountedBackpackContext getContext() {
 		return context;
+	}
+
+	@Override
+	public void removed(Player player) {
+		super.removed(player);
+		context.close();
+	}
+
+	public void syncClientInfo(RenderData renderData, int previousPhysicalColumnsTaken, int columnsTaken) {
+		boolean columnsChanged = previousPhysicalColumnsTaken != columnsTaken;
+		storageWrapper.getRenderDataHandler().reloadFrom(renderData);
+		storageWrapper.setColumnsTaken(columnsTaken, false);
+		if (columnsChanged) {
+			storageWrapper.onContentsUpdated();
+			refreshAllSlots();
+			onUpgradesChanged();
+		}
+	}
+
+	public void syncClientProfile(RenderData renderData, int columnsTaken) {
+		syncClientInfo(renderData, storageWrapper.getColumnsTaken(), columnsTaken);
 	}
 }
