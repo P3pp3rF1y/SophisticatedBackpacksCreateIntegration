@@ -25,8 +25,10 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackLinkedStorageResolver;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.LinkedStorageBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContext;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
@@ -38,6 +40,9 @@ import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdatePayload;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.EnderLinkerItem;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageItemInteractionTarget;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderDataHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.TankPosition;
@@ -48,11 +53,12 @@ import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Objects;
 import java.util.OptionalInt;
 
 import static net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlock.*;
 
-public class MountedSophisticatedBackpack extends MountedStorageBase {
+public class MountedSophisticatedBackpack extends MountedStorageBase implements ILinkedStorageItemInteractionTarget {
 	public static final MapCodec<MountedSophisticatedBackpack> CODEC = ItemStack.OPTIONAL_CODEC
 			.xmap(MountedSophisticatedBackpack::new, MountedSophisticatedBackpack::getStorageStack).fieldOf("value");
 
@@ -79,9 +85,23 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	public void setStorageStack(ItemStack stack) {
+		if (backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper
+				&& linkedStorageBackpackWrapper.hasEndpoint(stack.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT))
+				&& linkedStorageBackpackWrapper.getBackpack().is(stack.getItem())) {
+			linkedStorageBackpackWrapper.replacePhysicalBackpackStack(stack);
+		} else if (backpackWrapper instanceof BackpackWrapper regularBackpackWrapper && hasSameStorage(stack, regularBackpackWrapper)) {
+			regularBackpackWrapper.replaceBackpackStack(stack);
+		} else {
+			closeBackpackWrapper();
+		}
 		super.setStorageStack(stack);
-		backpackWrapper = IBackpackWrapper.Noop.INSTANCE;
 		updateRenderAttributes = true;
+	}
+
+	private static boolean hasSameStorage(ItemStack stack, BackpackWrapper backpackWrapper) {
+		ItemStack currentStack = backpackWrapper.getBackpack();
+		return currentStack.is(stack.getItem()) && currentStack.has(ModCoreDataComponents.STORAGE_UUID)
+				&& Objects.equals(currentStack.get(ModCoreDataComponents.STORAGE_UUID), stack.get(ModCoreDataComponents.STORAGE_UUID));
 	}
 
 	private void setStackDirty() {
@@ -94,6 +114,11 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	public static MountedSophisticatedBackpack from(BackpackBlockEntity backpackBe) {
 		return new MountedSophisticatedBackpack(backpackBe.getBackpackWrapper().getBackpack());
+	}
+
+	public void initializeStorage(Level level) {
+		setLevel(level);
+		getStorageWrapper();
 	}
 
 	@Nullable
@@ -127,18 +152,43 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 	@Override
 	public IStorageWrapper getStorageWrapper() {
 		if (backpackWrapper == IBackpackWrapper.Noop.INSTANCE) {
-			backpackWrapper = BackpackWrapper.fromStack(getStorageStack());
-			backpackWrapper.setContentsChangeHandler(this::onStackChanged);
+			backpackWrapper = BackpackLinkedStorageResolver.resolveOrCreate(getLevel(), getStorageStack());
+			configureBackpackWrapper(backpackWrapper);
 		}
 
 		return backpackWrapper;
 	}
 
+	private void configureBackpackWrapper(IBackpackWrapper wrapper) {
+		wrapper.setContentsChangeHandler(this::onStackChanged);
+		if (wrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper) {
+			linkedStorageBackpackWrapper.setCanonicalContentsChangedHandler(this::onStackChanged);
+		}
+	}
+
+	private void closeBackpackWrapper() {
+		if (backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper) {
+			linkedStorageBackpackWrapper.close();
+		}
+		backpackWrapper = IBackpackWrapper.Noop.INSTANCE;
+	}
+
 	@Override
 	public void unmount(Level level, BlockState state, BlockPos pos, @Nullable BlockEntity be) {
-		if (getStorageStack().has(ModCoreDataComponents.STORAGE_UUID) && be instanceof BackpackBlockEntity backpackBe) {
+		if (be instanceof BackpackBlockEntity backpackBe) {
 			backpackBe.setBackpack(getStorageStack());
 		}
+		closeBackpackWrapper();
+	}
+
+	@Override
+	public void onContraptionDestroyed() {
+		closeBackpackWrapper();
+	}
+
+	@Override
+	public void onContraptionRemoved() {
+		closeBackpackWrapper();
 	}
 
 	private static MountedStorageContainerMenuBase createMenu(int id, Player pl, MountedBackpackContext context) {
@@ -152,6 +202,14 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 
 	@Override
 	public boolean handleInteraction(ServerPlayer player, Contraption contraption, StructureTemplate.StructureBlockInfo info) {
+		ItemStack linker = player.getMainHandItem();
+		if (linker.getItem() instanceof EnderLinkerItem) {
+			setContraptionEntity(contraption.entity);
+			setLocalPos(info.pos());
+			setLevel(player.level());
+			BlockPos feedbackPos = BlockPos.containing(contraption.entity.toGlobalVector(Vec3.atCenterOf(info.pos()), 0));
+			return EnderLinkerItem.tryLinkItemInteractionTarget(player, linker, this, feedbackPos).isPresent();
+		}
 		ServerLevel level = player.level();
 		int contraptionEntityId = contraption.entity.getId();
 		BlockPos localPos = info.pos();
@@ -166,6 +224,18 @@ public class MountedSophisticatedBackpack extends MountedStorageBase {
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public ItemStack getLinkedStorageItem() {
+		return getStorageStack();
+	}
+
+	@Override
+	public void onLinkedStorageEndpointChanged(ServerPlayer player, @Nullable LinkedStorageEndpointData previousEndpoint,
+			@Nullable LinkedStorageEndpointData currentEndpoint) {
+		closeBackpackWrapper();
+		getStorageWrapper();
 	}
 
 	protected Vec3 getPosition() {
