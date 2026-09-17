@@ -8,19 +8,20 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackStorage;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
-import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.ClientLinkedStorageBackpackContents;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackContentsMessage;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.LinkedStorageBackpackContentsMessage;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.SBPPacketHandler;
 import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsCategory;
 import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.SettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContentsBinding;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
+import net.p3pp3rf1y.sophisticatedcore.network.LinkedStorageContentsMessage;
+import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -72,8 +73,8 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 	public void detectSettingsChangeAndReload() {
 		Optional<UUID> groupId = getLinkedStorageGroupId();
 		if (groupId.isPresent()) {
-			if (player.level().isClientSide && ClientLinkedStorageBackpackContents.removeUpdatedGroup(groupId.get())) {
-				ILinkedStorageContentsBinding contents = ClientLinkedStorageBackpackContents.getBinding(groupId.get())
+			if (player.level().isClientSide && ClientLinkedStorageContents.removeUpdatedGroup(groupId.get())) {
+				ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(groupId.get())
 						.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + groupId.get()));
 				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents());
 			}
@@ -94,8 +95,7 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 			CompoundTag settingsNbt = storageWrapper.getSettingsHandler().getNbt();
 			if (lastLinkedSettingsNbt == null || !lastLinkedSettingsNbt.equals(settingsNbt)) {
 				lastLinkedSettingsNbt = settingsNbt.copy();
-				SBPPacketHandler.INSTANCE.sendToClient(serverPlayer,
-						LinkedStorageBackpackContentsMessage.createSnapshot(serverPlayer.serverLevel(), groupId.get()));
+				PacketHandler.INSTANCE.sendToClient(serverPlayer, LinkedStorageContentsMessage.createSnapshot(serverPlayer.serverLevel(), groupId.get()));
 			}
 			return;
 		}
