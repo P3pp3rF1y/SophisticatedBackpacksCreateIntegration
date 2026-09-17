@@ -28,7 +28,6 @@ import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.LinkedStorageBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.init.ModDataComponents;
-import net.p3pp3rf1y.sophisticatedbackpacks.network.LinkedStorageBackpackContentsPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContext;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackSettingsContainerMenu;
@@ -43,6 +42,7 @@ import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdatePayload
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.EnderLinkerItem;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageItemInteractionTarget;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeClientData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -232,7 +232,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase implements 
 
 		for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
 			if (player.level() == serverLevel && isOpenMountedBackpackMenu(player, entity.getId())) {
-				PacketDistributor.sendToPlayer(player, LinkedStorageBackpackContentsPayload.createSnapshot(serverLevel, endpoint.groupId()));
+				PacketDistributor.sendToPlayer(player, LinkedStorageContentsPayload.createSnapshot(serverLevel, endpoint.groupId()));
 			}
 		}
 	}
