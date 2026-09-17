@@ -25,8 +25,10 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSub
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.OpenMountedBackpackInventoryPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.SophisticatedBackpackMovementBehaviour;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackContainerMenu;
+import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackLinkedStorageEndpointAccessProvider;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.common.MountedBackpackSettingsContainerMenu;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.schematic.SophisticatedBackpackSafeNbtWriter;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointAccessProviders;
 
 import java.util.function.Supplier;
 
@@ -59,6 +61,7 @@ public class ModContent {
 	}
 
 	private static void onModSetup(FMLCommonSetupEvent event) {
+		event.enqueueWork(() -> LinkedStorageEndpointAccessProviders.register(new MountedBackpackLinkedStorageEndpointAccessProvider()));
 		BuiltInRegistries.BLOCK.stream().filter(block -> block instanceof BackpackBlock).forEach(block -> {
 			MountedItemStorageType.REGISTRY.register(block, SOPHISTICATED_MOUNTED_BACKPACK_TYPE.get());
 			MovementBehaviour.REGISTRY.register(block, SophisticatedBackpackMovementBehaviour.INSTANCE);

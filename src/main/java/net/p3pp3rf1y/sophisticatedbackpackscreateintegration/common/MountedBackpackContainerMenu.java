@@ -20,6 +20,9 @@ import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
@@ -28,6 +31,7 @@ import java.util.UUID;
 
 public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBase implements ISyncedContainer {
 	private final MountedBackpackContext context;
+	private ContainerContents.SettingsData lastLinkedSettingsData = null;
 
 	public MountedBackpackContainerMenu(int containerId, Player player, MountedBackpackContext context) {
 		this(ModContent.MOUNTED_BACKPACK_CONTAINER_TYPE.get(), containerId, player, context);
@@ -55,6 +59,36 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 			PacketDistributor.sendToPlayer(serverPlayer, new MountedBackpackClientInfoPayload(context.getContraptionEntityId(), context.getLocalPos(),
 					backpackWrapper.getRenderDataHandler().getData().copy(), backpackWrapper.getColumnsTaken()));
 		}
+	}
+
+	@Override
+	protected void sendStorageSettingsToClient() {
+		if (storageWrapper instanceof IBackpackWrapper backpackWrapper && backpackWrapper.getLinkedStorageEndpoint().isPresent()) {
+			ContainerContents.SettingsData settingsData = storageWrapper.getSettingsHandler().getSettingsData();
+			if ((lastLinkedSettingsData == null || !lastLinkedSettingsData.equals(settingsData)) && player instanceof ServerPlayer serverPlayer) {
+				lastLinkedSettingsData = settingsData.copy();
+				UUID groupId = backpackWrapper.getLinkedStorageEndpoint().orElseThrow().groupId();
+				PacketDistributor.sendToPlayer(serverPlayer, LinkedStorageContentsPayload.createSnapshot(serverPlayer.level(), groupId));
+			}
+			return;
+		}
+		super.sendStorageSettingsToClient();
+	}
+
+	@Override
+	public boolean detectSettingsChangeAndReload() {
+		if (player.level().isClientSide() && storageWrapper instanceof IBackpackWrapper backpackWrapper
+				&& backpackWrapper.getLinkedStorageEndpoint().isPresent()) {
+			UUID groupId = backpackWrapper.getLinkedStorageEndpoint().orElseThrow().groupId();
+			if (ClientLinkedStorageContents.removeUpdatedGroup(groupId)) {
+				ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(groupId)
+						.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + groupId));
+				storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
+				return true;
+			}
+			return false;
+		}
+		return super.detectSettingsChangeAndReload();
 	}
 
 	@Override

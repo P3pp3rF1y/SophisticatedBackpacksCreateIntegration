@@ -10,11 +10,14 @@ import net.minecraft.world.item.ItemStack;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackItem;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackLinkedStorageResolver;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
+import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.LinkedStorageBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.common.gui.BackpackContext;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.backpack.MountedSophisticatedBackpack;
 import net.p3pp3rf1y.sophisticatedcore.api.IStorageWrapper;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.ContraptionHelper;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageBase;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 import org.jspecify.annotations.Nullable;
 
@@ -125,6 +128,8 @@ public class MountedBackpackContext {
 		private final int subBackpackSlotIndex;
 		@Nullable
 		private IStorageWrapper parentWrapper;
+		@Nullable
+		private IBackpackWrapper backpackWrapper;
 
 		public SubBackpack(int contraptionEntityId, BlockPos localPos, int subBackpackSlotIndex) {
 			super(contraptionEntityId, localPos);
@@ -144,10 +149,55 @@ public class MountedBackpackContext {
 			return getParentBackpackWrapper(player).map(parent -> {
 				ItemStack stackInSlot = parent.getInventoryHandler().getStackInSlot(subBackpackSlotIndex);
 				if (!(stackInSlot.getItem() instanceof BackpackItem)) {
+					closeBackpackWrapper();
 					return IBackpackWrapper.Noop.INSTANCE;
 				}
-				return BackpackLinkedStorageResolver.resolveOrCreate(player.level(), stackInSlot);
+
+				LinkedStorageEndpointData endpoint = stackInSlot.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
+				if (backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper
+						&& linkedStorageBackpackWrapper.hasEndpoint(endpoint)) {
+					linkedStorageBackpackWrapper.setBackpackStack(stackInSlot);
+				} else if (backpackWrapper == null || backpackWrapper.getBackpack() != stackInSlot || backpackWrapper instanceof LinkedStorageBackpackWrapper) {
+					closeBackpackWrapper();
+					backpackWrapper = BackpackLinkedStorageResolver.resolveOrCreate(player.level(), stackInSlot);
+				} else if (endpoint != null) {
+					BackpackLinkedStorageResolver.resolve(player.level(), stackInSlot).ifPresent(linkedStorageBackpackWrapper -> {
+						closeBackpackWrapper();
+						backpackWrapper = linkedStorageBackpackWrapper;
+					});
+				}
+				if (backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper) {
+					linkedStorageBackpackWrapper.setCanonicalContentsChangedHandler(this::saveBackpackStack);
+				}
+				return backpackWrapper;
 			}).orElse(IBackpackWrapper.Noop.INSTANCE);
+		}
+
+		@Override
+		public void close() {
+			closeBackpackWrapper();
+		}
+
+		private void closeBackpackWrapper() {
+			if (backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper) {
+				linkedStorageBackpackWrapper.close();
+			}
+			backpackWrapper = null;
+		}
+
+		private void saveBackpackStack() {
+			if (parentWrapper != null && backpackWrapper != null && isCurrentSubBackpackStack()) {
+				parentWrapper.getInventoryHandler().setStackInSlot(subBackpackSlotIndex, ItemStack.EMPTY);
+				parentWrapper.getInventoryHandler().setStackInSlot(subBackpackSlotIndex, backpackWrapper.getBackpack());
+			}
+		}
+
+		private boolean isCurrentSubBackpackStack() {
+			ItemStack currentStack = parentWrapper.getInventoryHandler().getStackInSlot(subBackpackSlotIndex);
+			if (backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper) {
+				return linkedStorageBackpackWrapper.hasEndpoint(currentStack.get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT));
+			}
+			return backpackWrapper.getBackpack() == currentStack;
 		}
 
 		@Override
