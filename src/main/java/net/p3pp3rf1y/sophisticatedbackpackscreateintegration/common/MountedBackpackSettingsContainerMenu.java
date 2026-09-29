@@ -40,7 +40,7 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 	}
 
 	public static MountedBackpackSettingsContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new MountedBackpackSettingsContainerMenu(windowId, playerInventory.player, MountedBackpackContext.fromBuffer(buffer));
+		return new MountedBackpackSettingsContainerMenu(windowId, playerInventory.player, MountedBackpackContext.fromBuffer(buffer, playerInventory.player));
 	}
 
 	public MountedBackpackContext getContext() {
