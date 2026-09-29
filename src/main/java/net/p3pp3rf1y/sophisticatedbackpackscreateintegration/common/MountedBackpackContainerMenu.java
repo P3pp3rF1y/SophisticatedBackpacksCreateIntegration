@@ -47,7 +47,7 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 	}
 
 	public static MountedBackpackContainerMenu fromBuffer(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new MountedBackpackContainerMenu(windowId, playerInventory.player, MountedBackpackContext.fromBuffer(buffer));
+		return new MountedBackpackContainerMenu(windowId, playerInventory.player, MountedBackpackContext.fromBuffer(buffer, playerInventory.player));
 	}
 
 	@Override

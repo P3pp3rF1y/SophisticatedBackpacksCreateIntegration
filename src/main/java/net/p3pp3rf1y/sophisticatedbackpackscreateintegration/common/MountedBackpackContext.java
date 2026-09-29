@@ -90,7 +90,7 @@ public class MountedBackpackContext {
 		buffer.writeBlockPos(localPos);
 	}
 
-	public static MountedBackpackContext fromBuffer(FriendlyByteBuf buffer) {
+	public static MountedBackpackContext fromBuffer(FriendlyByteBuf buffer, Player player) {
 		BackpackContext.ContextType type = BackpackContext.ContextType.fromBuffer(buffer);
 		MountedBackpackContext context;
 		if (type == BackpackContext.ContextType.ITEM_SUB_BACKPACK) {
@@ -100,7 +100,7 @@ public class MountedBackpackContext {
 		} else {
 			throw new IllegalArgumentException();
 		}
-		BackpackContext.readLinkedStorageSnapshot(buffer);
+		BackpackContext.readLinkedStorageSnapshot(buffer, player.registryAccess());
 		return context;
 	}
 
