@@ -19,14 +19,17 @@ import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.common.gui.ISyncedContainer;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderData;
 import net.p3pp3rf1y.sophisticatedcore.settings.itemdisplay.ItemDisplaySettingsCategory;
 import net.p3pp3rf1y.sophisticatedcore.util.NoopStorageWrapper;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBase implements ISyncedContainer {
@@ -63,12 +66,15 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	@Override
 	protected void sendStorageSettingsToClient() {
-		if (storageWrapper instanceof IBackpackWrapper backpackWrapper && backpackWrapper.getLinkedStorageEndpoint().isPresent()) {
+		if (player.level().isClientSide()) {
+			return;
+		}
+		Optional<UUID> groupId = getLinkedStorageGroupId();
+		if (player instanceof ServerPlayer serverPlayer && groupId.isPresent()) {
 			ContainerContents.SettingsData settingsData = storageWrapper.getSettingsHandler().getSettingsData();
-			if ((lastLinkedSettingsData == null || !lastLinkedSettingsData.equals(settingsData)) && player instanceof ServerPlayer serverPlayer) {
+			if (lastLinkedSettingsData == null || !lastLinkedSettingsData.equals(settingsData)) {
 				lastLinkedSettingsData = settingsData.copy();
-				UUID groupId = backpackWrapper.getLinkedStorageEndpoint().orElseThrow().groupId();
-				PacketDistributor.sendToPlayer(serverPlayer, LinkedStorageContentsPayload.createSnapshot(serverPlayer.level(), groupId));
+				PacketDistributor.sendToPlayer(serverPlayer, new LinkedStorageSettingsPayload(groupId.get(), lastLinkedSettingsData));
 			}
 			return;
 		}
@@ -77,14 +83,18 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	@Override
 	public boolean detectSettingsChangeAndReload() {
-		if (player.level().isClientSide() && storageWrapper instanceof IBackpackWrapper backpackWrapper
-				&& backpackWrapper.getLinkedStorageEndpoint().isPresent()) {
-			UUID groupId = backpackWrapper.getLinkedStorageEndpoint().orElseThrow().groupId();
-			if (ClientLinkedStorageContents.removeUpdatedGroup(groupId)) {
-				ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(groupId)
-						.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + groupId));
-				storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
-				return true;
+		Optional<UUID> groupId = getLinkedStorageGroupId();
+		if (groupId.isPresent()) {
+			if (player.level().isClientSide()) {
+				UUID linkedGroupId = groupId.get();
+				boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(linkedGroupId);
+				boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(linkedGroupId);
+				if (snapshotChanged || settingsChanged) {
+					ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(linkedGroupId)
+							.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + linkedGroupId));
+					storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
+					return true;
+				}
 			}
 			return false;
 		}
@@ -140,5 +150,12 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 
 	public void syncClientProfile(RenderData renderData, int columnsTaken) {
 		syncClientInfo(renderData, storageWrapper.getColumnsTaken(), columnsTaken);
+	}
+
+	private Optional<UUID> getLinkedStorageGroupId() {
+		if (!(storageWrapper instanceof IBackpackWrapper backpackWrapper)) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(backpackWrapper.getBackpack().get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)).map(LinkedStorageEndpointData::groupId);
 	}
 }

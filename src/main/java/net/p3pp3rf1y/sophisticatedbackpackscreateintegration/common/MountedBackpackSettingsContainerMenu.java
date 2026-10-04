@@ -14,11 +14,14 @@ import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackSettingsPayload;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
+import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.inventory.ContainerContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class MountedBackpackSettingsContainerMenu extends MountedStorageSettingsContainerMenuBase {
@@ -49,13 +52,17 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 
 	@Override
 	public void detectSettingsChangeAndReload() {
-		if (player.level().isClientSide() && storageWrapper instanceof IBackpackWrapper backpackWrapper
-				&& backpackWrapper.getLinkedStorageEndpoint().isPresent()) {
-			UUID groupId = backpackWrapper.getLinkedStorageEndpoint().orElseThrow().groupId();
-			if (ClientLinkedStorageContents.removeUpdatedGroup(groupId)) {
-				ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(groupId)
-						.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + groupId));
-				storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
+		Optional<UUID> groupId = getLinkedStorageGroupId();
+		if (groupId.isPresent()) {
+			if (player.level().isClientSide()) {
+				UUID linkedGroupId = groupId.get();
+				boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(linkedGroupId);
+				boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(linkedGroupId);
+				if (snapshotChanged || settingsChanged) {
+					ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(linkedGroupId)
+							.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + linkedGroupId));
+					storageWrapper.getSettingsHandler().reloadFrom(contents.contents().settings());
+				}
 			}
 			return;
 		}
@@ -75,12 +82,15 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 
 	@Override
 	protected void sendStorageSettingsToClient() {
-		if (storageWrapper instanceof IBackpackWrapper backpackWrapper && backpackWrapper.getLinkedStorageEndpoint().isPresent()) {
+		if (player.level().isClientSide()) {
+			return;
+		}
+		Optional<UUID> groupId = getLinkedStorageGroupId();
+		if (player instanceof ServerPlayer serverPlayer && groupId.isPresent()) {
 			ContainerContents.SettingsData settingsData = storageWrapper.getSettingsHandler().getSettingsData();
-			if ((lastLinkedSettingsData == null || !lastLinkedSettingsData.equals(settingsData)) && player instanceof ServerPlayer serverPlayer) {
+			if (lastLinkedSettingsData == null || !lastLinkedSettingsData.equals(settingsData)) {
 				lastLinkedSettingsData = settingsData.copy();
-				UUID groupId = backpackWrapper.getLinkedStorageEndpoint().orElseThrow().groupId();
-				PacketDistributor.sendToPlayer(serverPlayer, LinkedStorageContentsPayload.createSnapshot(serverPlayer.level(), groupId));
+				PacketDistributor.sendToPlayer(serverPlayer, new LinkedStorageSettingsPayload(groupId.get(), lastLinkedSettingsData));
 			}
 			return;
 		}
@@ -93,5 +103,12 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 		if (storage.removeUpdatedBackpackSettingsFlag(uuid)) {
 			storageWrapper.getSettingsHandler().reloadFrom(storage.getOrCreateBackpackContents(uuid).settings());
 		}
+	}
+
+	private Optional<UUID> getLinkedStorageGroupId() {
+		if (!(storageWrapper instanceof IBackpackWrapper backpackWrapper)) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(backpackWrapper.getBackpack().get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT)).map(LinkedStorageEndpointData::groupId);
 	}
 }
