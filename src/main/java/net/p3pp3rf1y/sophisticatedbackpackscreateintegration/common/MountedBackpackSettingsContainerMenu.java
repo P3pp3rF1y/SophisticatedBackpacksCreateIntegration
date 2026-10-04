@@ -19,8 +19,8 @@ import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsConta
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
+import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -72,10 +72,15 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 	public void detectSettingsChangeAndReload() {
 		Optional<UUID> groupId = getLinkedStorageGroupId();
 		if (groupId.isPresent()) {
-			if (player.level().isClientSide && ClientLinkedStorageContents.removeUpdatedGroup(groupId.get())) {
-				ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(groupId.get())
-						.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + groupId.get()));
-				storageWrapper.getSettingsHandler().reloadFrom(contents.getContents());
+			if (player.level().isClientSide) {
+				UUID linkedGroupId = groupId.get();
+				boolean snapshotChanged = ClientLinkedStorageContents.removeUpdatedGroup(linkedGroupId);
+				boolean settingsChanged = ClientLinkedStorageContents.removeUpdatedSettings(linkedGroupId);
+				if (snapshotChanged || settingsChanged) {
+					ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(linkedGroupId)
+							.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + linkedGroupId));
+					storageWrapper.getSettingsHandler().reloadFrom(contents.getContents());
+				}
 			}
 			return;
 		}
@@ -94,7 +99,7 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 			CompoundTag settingsNbt = storageWrapper.getSettingsHandler().getNbt();
 			if (lastLinkedSettingsNbt == null || !lastLinkedSettingsNbt.equals(settingsNbt)) {
 				lastLinkedSettingsNbt = settingsNbt.copy();
-				PacketDistributor.sendToPlayer(serverPlayer, LinkedStorageContentsPayload.createSnapshot(serverPlayer.serverLevel(), groupId.get()));
+				PacketDistributor.sendToPlayer(serverPlayer, new LinkedStorageSettingsPayload(groupId.get(), lastLinkedSettingsNbt));
 			}
 			return;
 		}

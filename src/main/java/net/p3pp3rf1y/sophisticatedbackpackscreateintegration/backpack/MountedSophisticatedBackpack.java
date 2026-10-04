@@ -42,7 +42,6 @@ import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageUpdatePayload
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.EnderLinkerItem;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageItemInteractionTarget;
-import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageContentsPayload;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -215,38 +214,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase implements 
 		setStackDirty();
 		blockRenderDirty = true;
 		refreshBlockRenderState();
-		syncLinkedContentsToOpenMenus();
 		sendStorageUpdatePayload();
-	}
-
-	private void syncLinkedContentsToOpenMenus() {
-		if (!(getLevel() instanceof ServerLevel serverLevel) || !(backpackWrapper instanceof LinkedStorageBackpackWrapper linkedStorageBackpackWrapper)) {
-			return;
-		}
-
-		LinkedStorageEndpointData endpoint = linkedStorageBackpackWrapper.getBackpack().get(ModCoreDataComponents.LINKED_STORAGE_ENDPOINT);
-		Entity entity = getEntity();
-		if (endpoint == null || entity == null) {
-			return;
-		}
-
-		for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
-			if (player.serverLevel() == serverLevel && isOpenMountedBackpackMenu(player, entity.getId())) {
-				PacketDistributor.sendToPlayer(player, LinkedStorageContentsPayload.createSnapshot(serverLevel, endpoint.groupId()));
-			}
-		}
-	}
-
-	private boolean isOpenMountedBackpackMenu(ServerPlayer player, int contraptionEntityId) {
-		if (player.containerMenu instanceof MountedBackpackContainerMenu menu) {
-			MountedBackpackContext context = menu.getContext();
-			return context.getContraptionEntityId() == contraptionEntityId && context.getLocalPos().equals(localPos);
-		}
-		if (player.containerMenu instanceof MountedBackpackSettingsContainerMenu menu) {
-			MountedBackpackContext context = menu.getContext();
-			return context.getContraptionEntityId() == contraptionEntityId && context.getLocalPos().equals(localPos);
-		}
-		return false;
 	}
 
 	private void refreshBlockRenderState() {
