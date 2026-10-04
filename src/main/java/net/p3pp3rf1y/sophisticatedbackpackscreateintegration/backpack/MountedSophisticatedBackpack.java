@@ -42,7 +42,6 @@ import net.p3pp3rf1y.sophisticatedcore.linkedstorage.EnderLinkerItem;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageItemInteractionTarget;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageStackData;
-import net.p3pp3rf1y.sophisticatedcore.network.LinkedStorageContentsMessage;
 import net.p3pp3rf1y.sophisticatedcore.network.PacketHandler;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.IUpgradeRenderData;
 import net.p3pp3rf1y.sophisticatedcore.renderdata.RenderInfo;
@@ -213,36 +212,7 @@ public class MountedSophisticatedBackpack extends MountedStorageBase implements 
 		setStackDirty();
 		blockRenderDirty = true;
 		refreshBlockRenderState();
-		syncLinkedContentsToOpenMenus();
 		sendStorageUpdatePayload();
-	}
-
-	private void syncLinkedContentsToOpenMenus() {
-		if (!(getLevel() instanceof ServerLevel serverLevel) || !(backpackWrapper instanceof LinkedStorageBackpackWrapper)) {
-			return;
-		}
-
-		LinkedStorageEndpointData endpoint = LinkedStorageStackData.getEndpoint(getStorageStack());
-		Entity entity = getEntity();
-		if (endpoint == null || entity == null) {
-			return;
-		}
-
-		for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
-			if (player.serverLevel() == serverLevel && isOpenMountedBackpackMenu(player, entity.getId())) {
-				PacketHandler.INSTANCE.sendToClient(player, LinkedStorageContentsMessage.createSnapshot(serverLevel, endpoint.groupId()));
-			}
-		}
-	}
-
-	private boolean isOpenMountedBackpackMenu(ServerPlayer player, int contraptionEntityId) {
-		if (player.containerMenu instanceof MountedBackpackContainerMenu menu) {
-			return menu.getContext().getContraptionEntityId() == contraptionEntityId && menu.getContext().getLocalPos().equals(localPos);
-		}
-		if (player.containerMenu instanceof MountedBackpackSettingsContainerMenu menu) {
-			return menu.getContext().getContraptionEntityId() == contraptionEntityId && menu.getContext().getLocalPos().equals(localPos);
-		}
-		return false;
 	}
 
 	private void refreshBlockRenderState() {
