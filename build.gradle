@@ -181,10 +181,11 @@ sourceSets.main.resources {
     srcDir 'src/generated/resources'
 }
 
-// Create is not available for 26.3. Keep the integration source for a future port,
-// but compile only the inert mod entrypoint until its dependency can be updated.
+// Native Create is not available for 26.3. Keep all real integration sources for the
+// future port, but exclude them from compilation rather than shipping an inert entrypoint.
+// Remove this exclusion after updating the Create dependency to a compatible 26.3 release.
 sourceSets.main.java {
-    include 'net/p3pp3rf1y/sophisticatedbackpackscreateintegration/SophisticatedBackpacksCreateIntegration.java'
+    exclude '**/*.java'
 }
 
 if (isClientDataRun) {
