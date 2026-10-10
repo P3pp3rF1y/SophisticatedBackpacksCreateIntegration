@@ -79,7 +79,7 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 				if (snapshotChanged || settingsChanged) {
 					ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(linkedGroupId)
 							.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + linkedGroupId));
-					storageWrapper.getSettingsHandler().reloadFrom(contents.getContents());
+					storageWrapper.getSettingsHandler().reloadFromStorageContents(contents.getContents());
 				}
 			}
 			return;

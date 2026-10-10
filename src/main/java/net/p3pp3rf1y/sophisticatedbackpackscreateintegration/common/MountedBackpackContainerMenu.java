@@ -116,7 +116,7 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 				if (snapshotChanged || settingsChanged) {
 					ILinkedStorageContents contents = ClientLinkedStorageContents.getContents(linkedGroupId)
 							.orElseThrow(() -> new IllegalStateException("Updated linked backpack group has no snapshot: " + linkedGroupId));
-					storageWrapper.getSettingsHandler().reloadFrom(contents.getContents());
+					storageWrapper.getSettingsHandler().reloadFromStorageContents(contents.getContents());
 					return true;
 				}
 			}
@@ -156,7 +156,8 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 		}
 	}
 
-	private Optional<UUID> getLinkedStorageGroupId() {
+	@Override
+	public Optional<UUID> getLinkedStorageGroupId() {
 		if (!(storageWrapper instanceof IBackpackWrapper backpackWrapper)) {
 			return Optional.empty();
 		}
