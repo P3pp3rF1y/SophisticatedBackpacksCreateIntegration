@@ -152,7 +152,8 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 		syncClientInfo(renderData, storageWrapper.getColumnsTaken(), columnsTaken);
 	}
 
-	private Optional<UUID> getLinkedStorageGroupId() {
+	@Override
+	public Optional<UUID> getLinkedStorageGroupId() {
 		if (!(storageWrapper instanceof IBackpackWrapper backpackWrapper)) {
 			return Optional.empty();
 		}
