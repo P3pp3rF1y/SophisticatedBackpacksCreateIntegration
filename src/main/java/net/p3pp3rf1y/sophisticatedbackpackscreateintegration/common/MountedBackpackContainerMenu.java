@@ -152,7 +152,7 @@ public class MountedBackpackContainerMenu extends MountedStorageContainerMenuBas
 		}
 	}
 
-	private Optional<UUID> getLinkedStorageGroupId() {
+	public Optional<UUID> getLinkedStorageGroupId() {
 		if (!(storageWrapper instanceof IBackpackWrapper backpackWrapper)) {
 			return Optional.empty();
 		}
