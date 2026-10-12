@@ -12,6 +12,7 @@ import net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackStorage;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.BackpackSettingsHandler;
 import net.p3pp3rf1y.sophisticatedbackpacks.backpack.wrapper.IBackpackWrapper;
 import net.p3pp3rf1y.sophisticatedbackpacks.network.BackpackSettingsPayload;
+import net.p3pp3rf1y.sophisticatedbackpacks.settings.BackpackMainSettingsContainer;
 import net.p3pp3rf1y.sophisticatedbackpackscreateintegration.init.ModContent;
 import net.p3pp3rf1y.sophisticatedcore.compat.create.MountedStorageSettingsContainerMenuBase;
 import net.p3pp3rf1y.sophisticatedcore.init.ModCoreDataComponents;
@@ -20,11 +21,16 @@ import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ClientLinkedStorageContents
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.ILinkedStorageContents;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageEndpointData;
 import net.p3pp3rf1y.sophisticatedcore.linkedstorage.LinkedStorageSettingsPayload;
+import net.p3pp3rf1y.sophisticatedcore.settings.ISettingsCategory;
+import net.p3pp3rf1y.sophisticatedcore.settings.SettingsContainerBase;
+import net.p3pp3rf1y.sophisticatedcore.settings.main.MainSettingsCategory;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public class MountedBackpackSettingsContainerMenu extends MountedStorageSettingsContainerMenuBase {
+	private static final ISettingsContainerFactory<MainSettingsCategory, BackpackMainSettingsContainer> MAIN_SETTINGS_CONTAINER_FACTORY_OVERRIDE = BackpackMainSettingsContainer::new;
+
 	private final MountedBackpackContext context;
 	private ContainerContents.SettingsData lastLinkedSettingsData = null;
 
@@ -35,6 +41,15 @@ public class MountedBackpackSettingsContainerMenu extends MountedStorageSettings
 	protected MountedBackpackSettingsContainerMenu(MenuType<?> menuType, int windowId, Player player, MountedBackpackContext context) {
 		super(menuType, windowId, player, context.getBackpackWrapper(player), context.getContraptionEntityId(), context.getLocalPos());
 		this.context = context;
+	}
+
+	@Override
+	protected <C extends ISettingsCategory<?, ?>, T extends SettingsContainerBase<C>> ISettingsContainerFactory<C, T> getSettingsContainerFactory(String name) {
+		if (name.equals(MainSettingsCategory.NAME) && storageWrapper.getSettingsHandler() instanceof BackpackSettingsHandler) {
+			// noinspection unchecked
+			return (ISettingsContainerFactory<C, T>) MAIN_SETTINGS_CONTAINER_FACTORY_OVERRIDE;
+		}
+		return super.getSettingsContainerFactory(name);
 	}
 
 	@Override
